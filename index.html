@@ -1,1076 +1,1334 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>ONE THING</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ONE THING</title>
+    <style>
+        :root {
+            --bg: #070707;
+            --panel: #111111;
+            --panel2: #171717;
+            --text: #f4f4f0;
+            --muted: #8d8d86;
+            --line: #2a2a2a;
+            --accent: #f4f4f0;
+            --danger: #ff5c5c;
+        }
 
-  <style>
-    :root {
-      --bg: #070707;
-      --panel: #111;
-      --panel-2: #171717;
-      --text: #f4f4f0;
-      --muted: #8d8d86;
-      --line: #2a2a2a;
-      --accent: #f4f4f0;
-      --danger: #ff5c5c;
-    }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent
+        }
 
-    * { box-sizing: border-box; }
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+            overscroll-behavior: none
+        }
 
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
-      overscroll-behavior: none;
-    }
+        body {
+            min-height: 100dvh;
+            overflow: hidden
+        }
 
-    body {
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
+        button,
+        input,
+        textarea,
+        select {
+            font: inherit
+        }
 
-    button, input, textarea, select { font: inherit; }
+        button {
+            cursor: pointer
+        }
 
-    .app {
-      min-height: 100dvh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
-      gap: 14px;
-    }
+        .app {
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            padding: max(8px, env(safe-area-inset-top)) 4px max(10px, env(safe-area-inset-bottom));
+            gap: 12px
+        }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 12px;
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            border-bottom: 1px solid var(--line);
+            padding: 0 0 10px
+        }
 
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      letter-spacing: -0.04em;
-      line-height: 0.95;
-    }
+        .brand {
+            line-height: .95;
+            letter-spacing: -.04em
+        }
 
-    .brand strong {
-      font-size: clamp(26px, 8vw, 54px);
-      font-weight: 900;
-    }
+        .brand strong {
+            font-size: clamp(42px, 5vw, 72px);
+            font-weight: 900;
+            letter-spacing: -.08em
+        }
 
-    .brand span {
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
+        .brand span,
+        .stats,
+        .muted,
+        .field-label,
+        .small {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            line-height: 1.4
+        }
 
-    .stats {
-      text-align: right;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-    }
+        .stats {
+            text-align: right;
+            font-size: 14px;
+            padding-top: 10px
+        }
 
-    main {
-      display: grid;
-      place-items: stretch;
-      min-height: 0;
-    }
+        main {
+            min-height: 0;
+            display: grid
+        }
 
-    .focus-card {
-      min-height: 100%;
-      background: linear-gradient(180deg, var(--panel), #0c0c0c);
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      padding: clamp(20px, 5vw, 42px);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 28px;
-      box-shadow: 0 20px 80px rgba(0,0,0,0.45);
-    }
+        .focus-card {
+            min-height: 100%;
+            background: linear-gradient(180deg, rgba(22, 22, 22, .94), rgba(8, 8, 8, .96));
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 28px;
+            padding: clamp(28px, 2.2vw, 48px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 28px;
+            box-shadow: 0 28px 90px rgba(0, 0, 0, .62), inset 0 1px 0 rgba(255, 255, 255, .035);
+            overflow: hidden
+        }
 
-    .label {
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 12px;
-      margin-bottom: 16px;
-    }
+        .task-title {
+            font-size: clamp(72px, 7vw, 148px);
+            line-height: .82;
+            letter-spacing: -.095em;
+            font-weight: 900;
+            word-break: break-word;
+            margin-top: 22px
+        }
 
-    .task-title {
-      font-size: clamp(38px, 14vw, 120px);
-      line-height: 0.92;
-      letter-spacing: -0.08em;
-      font-weight: 900;
-      word-break: break-word;
-    }
+        .task-body {
+            color: var(--text);
+            opacity: .82;
+            font-size: clamp(18px, 1.5vw, 28px);
+            line-height: 1.35;
+            max-width: 820px;
+            white-space: pre-wrap;
+            margin-top: 10px;
+            margin-bottom: 12px
+        }
 
-    .task-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 18px;
-    }
+        .note {
+            color: var(--text);
+            opacity: .72;
+            font-size: clamp(16px, 3.8vw, 22px);
+            line-height: 1.35;
+            white-space: pre-wrap
+        }
 
-    .pill {
-      border: 1px solid var(--line);
-      background: var(--panel-2);
-      color: var(--muted);
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
+        .pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 24px
+        }
 
-    .note {
-      color: var(--text);
-      opacity: 0.82;
-      font-size: clamp(16px, 3.8vw, 22px);
-      line-height: 1.35;
-      max-width: 820px;
-      white-space: pre-wrap;
-    }
+        .pill {
+            border: 1px solid rgba(255, 255, 255, .13);
+            background: rgba(255, 255, 255, .025);
+            color: var(--muted);
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .08em
+        }
 
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
+        .actions {
+            display: grid;
+            grid-template-columns: 1.4fr .8fr .8fr;
+            gap: 10px;
+            margin-top: auto
+        }
 
-    .button {
-      border: 1px solid var(--accent);
-      background: var(--accent);
-      color: var(--bg);
-      border-radius: 18px;
-      padding: 18px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: -0.02em;
-      cursor: pointer;
-      min-height: 58px;
-    }
+        .button {
+            border: 1px solid var(--accent);
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 999px;
+            padding: 16px 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -.02em;
+            min-height: 54px;
+            font-size: 14px
+        }
 
-    .button.secondary {
-      background: transparent;
-      color: var(--text);
-      border-color: var(--line);
-    }
+        .button.secondary {
+            background: rgba(0, 0, 0, .16);
+            color: var(--text);
+            border-color: rgba(255, 255, 255, .12)
+        }
 
-    .button.danger { color: var(--danger); }
-    .button:active { transform: scale(0.99); }
+        .button.danger {
+            color: var(--danger)
+        }
 
-    footer {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
+        footer {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 620px;
+            width: 100%;
+            margin: 0 auto
+        }
 
-    .footer-button {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      color: var(--text);
-      border-radius: 16px;
-      padding: 13px 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-size: 12px;
-      cursor: pointer;
-    }
+        .footer-button {
+            background: rgba(17, 17, 17, .86);
+            border: 1px solid rgba(255, 255, 255, .12);
+            color: var(--text);
+            border-radius: 16px;
+            padding: 13px 10px;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            font-size: 12px;
+            backdrop-filter: blur(14px)
+        }
 
-    dialog {
-      width: min(620px, calc(100vw - 24px));
-      border: 1px solid var(--line);
-      background: var(--panel);
-      color: var(--text);
-      border-radius: 24px;
-      padding: 0;
-      box-shadow: 0 30px 120px rgba(0,0,0,0.65);
-    }
+        dialog {
+            width: min(620px, calc(100vw - 24px));
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 24px;
+            padding: 0;
+            box-shadow: 0 30px 120px rgba(0, 0, 0, .65)
+        }
 
-    dialog::backdrop {
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
-    }
+        dialog::backdrop {
+            background: rgba(0, 0, 0, .75);
+            backdrop-filter: blur(8px)
+        }
 
-    .modal-content {
-      padding: 20px;
-      display: grid;
-      gap: 12px;
-    }
+        .modal {
+            padding: 20px;
+            display: grid;
+            gap: 12px
+        }
 
-    .modal-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 12px;
-      margin-bottom: 4px;
-    }
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 12px
+        }
 
-    .modal-head h2 {
-      margin: 0;
-      font-size: 26px;
-      letter-spacing: -0.05em;
-      text-transform: uppercase;
-    }
+        .modal-head h2 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: -.05em;
+            text-transform: uppercase
+        }
 
-    .icon-button {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1px solid var(--line);
-      background: transparent;
-      color: var(--text);
-      cursor: pointer;
-      font-size: 22px;
-    }
+        .icon-button {
+            width: clamp(38px, 6dvh, 48px);
+            height: clamp(38px, 6dvh, 48px);
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: transparent;
+            color: var(--text);
+            font-size: 28px;
+            display: grid;
+            place-items: center
+        }
 
-    input, textarea, select {
-      width: 100%;
-      background: #090909;
-      border: 1px solid var(--line);
-      color: var(--text);
-      border-radius: 16px;
-      padding: 15px;
-      outline: none;
-    }
+        input,
+        textarea,
+        select {
+            width: 100%;
+            background: #090909;
+            border: 1px solid var(--line);
+            color: var(--text);
+            border-radius: 16px;
+            padding: 15px;
+            outline: none
+        }
 
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
+        textarea {
+            min-height: 130px;
+            resize: vertical
+        }
 
-    .field-label {
-      color: var(--muted);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: -4px;
-    }
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+        .list {
+            display: grid;
+            gap: 8px;
+            max-height: 56dvh;
+            overflow: auto
+        }
 
-    .task-list {
-      display: grid;
-      gap: 8px;
-      max-height: 56dvh;
-      overflow: auto;
-      padding-right: 2px;
-    }
+        .item {
+            border: 1px solid var(--line);
+            background: #0b0b0b;
+            border-radius: 16px;
+            padding: 14px;
+            display: grid;
+            gap: 6px;
+            cursor: pointer
+        }
 
-    .list-item {
-      border: 1px solid var(--line);
-      background: #0b0b0b;
-      border-radius: 16px;
-      padding: 14px;
-      display: grid;
-      gap: 7px;
-    }
+        .item strong {
+            font-size: 16px
+        }
 
-    .list-item strong {
-      font-size: 16px;
-      line-height: 1.1;
-    }
+        .empty {
+            display: grid;
+            place-items: center;
+            text-align: center;
+            height: 100%;
+            gap: 22px;
+            color: var(--muted)
+        }
 
-    .list-item span,
-    .voice-status {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
+        .empty strong {
+            display: block;
+            color: var(--text);
+            font-size: clamp(38px, 12vw, 90px);
+            line-height: .9;
+            letter-spacing: -.08em
+        }
 
-    .empty {
-      min-height: 100%;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      color: var(--muted);
-      padding: 30px;
-    }
+        .completed-block {
+            border-top: 1px solid rgba(255, 255, 255, .12);
+            padding-top: 26px;
+            display: grid;
+            gap: 18px
+        }
 
-    .empty strong {
-      display: block;
-      color: var(--text);
-      font-size: clamp(38px, 12vw, 90px);
-      line-height: 0.9;
-      letter-spacing: -0.08em;
-      margin-bottom: 16px;
-    }
+        .completed-list {
+            color: var(--muted);
+            font-size: clamp(18px, 4vw, 26px);
+            line-height: 1.45;
+            padding-left: 1.2em
+        }
 
-    .list-controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
+        .timer-lock {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .88);
+            z-index: 9999;
+            display: none;
+            place-items: center;
+            text-align: center;
+            padding: 24px;
+            backdrop-filter: blur(4px)
+        }
 
-    .spin-control {
-      display: grid;
-      place-items: center;
-      gap: 10px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: #090909;
-    }
+        .lock-inner {
+            display: grid;
+            gap: 22px;
+            width: min(720px, 100%)
+        }
 
-    .dial {
-      --size: 160px;
-      width: var(--size);
-      height: var(--size);
-      border-radius: 50%;
-      background: radial-gradient(circle, #0b0b0b 0 48%, #171717 49% 100%);
-      border: 1px solid var(--line);
-      box-shadow: 0 14px 35px rgba(0,0,0,.35);
-      touch-action: none;
-      cursor: grab;
-      user-select: none;
-      position: relative;
-      display: grid;
-      place-items: center;
-    }
+        .lock-time {
+            font-size: clamp(96px, 28vw, 210px);
+            font-weight: 900;
+            letter-spacing: -.11em;
+            line-height: .8
+        }
 
-    .dial.large { --size: min(72vw, 390px); }
+        .lock-task {
+            font-size: clamp(34px, 9vw, 78px);
+            font-weight: 900;
+            letter-spacing: -.08em;
+            line-height: .95
+        }
 
-    .dial-ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      transform-origin: 50% 50%;
-      pointer-events: none;
-    }
+        #timerDialog {
+            width: min(760px, calc(100vw - 24px));
+            max-width: 760px;
+            height: min(92dvh, 980px);
+            max-height: 92dvh;
+            background: linear-gradient(180deg, rgba(23, 23, 23, .98), rgba(8, 8, 8, .98));
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, .13);
+            overflow: hidden
+        }
 
-    .dial-tick {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 2px;
-      height: 12px;
-      background: var(--text);
-      border-radius: 999px;
-      transform-origin: center center;
-      opacity: .8;
-    }
+        .timer-modal {
+            height: 100%;
+            padding: clamp(12px, 2.2dvh, 24px) clamp(14px, 3vw, 20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: clamp(6px, 1.2dvh, 14px);
+            text-align: center;
+            overflow: hidden
+        }
 
-    .dial.large .dial-tick { height: 18px; }
+        .timer-heading-small {
+            color: var(--muted);
+            font-size: clamp(10px, 1.6dvh, 14px);
+            text-transform: uppercase;
+            letter-spacing: .16em;
+            margin-top: 0
+        }
 
-    .dial-centre {
-      position: relative;
-      z-index: 3;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      pointer-events: none;
-    }
+        .timer-spin-title {
+            font-size: clamp(42px, 10dvh, 112px);
+            font-weight: 900;
+            letter-spacing: -.095em;
+            line-height: 1.2;
+            margin-top: 4px
+        }
 
-    .dial-number {
-      font-size: 42px;
-      font-weight: 900;
-      line-height: .9;
-      letter-spacing: -0.08em;
-    }
+        .timer-spin-sub {
+            font-size: clamp(20px, 4.2dvh, 46px);
+            font-weight: 300;
+            letter-spacing: -.06em;
+            color: var(--muted);
+            line-height: .9
+        }
 
-    .dial.large .dial-number {
-      font-size: clamp(70px, 18vw, 120px);
-    }
+        .timer-end {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, .035);
+            border: 1px solid rgba(255, 255, 255, .12);
+            padding: 10px 16px;
+            border-radius: 24px;
+            color: var(--text);
+            font-size: clamp(14px, 2.6dvh, 24px);
+            margin-top: clamp(8px, 1.4dvh, 14px)
+        }
 
-    .dial-unit {
-      color: var(--muted);
-      font-size: 14px;
-      letter-spacing: -0.02em;
-      margin-top: 6px;
-    }
+        .timer-scale {
+            position: relative;
+            width: min(72vw, 38dvh, 500px);
+            aspect-ratio: 1/1;
+            display: grid;
+            place-items: center;
+            margin: 0 auto;
+            flex: 0 1 auto
+        }
 
-    .timer-scale {
-      position: relative;
-      width: min(82vw, 460px);
-      aspect-ratio: 1 / 1;
-      display: grid;
-      place-items: center;
-      margin: auto;
-    }
+        .timer-ring {
+            position: absolute;
+            inset: 9%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 0, 0, .92) 0 42%, rgba(30, 30, 30, .92) 43% 100%);
+            border: 1px solid rgba(255, 255, 255, .1);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .65);
+            touch-action: none;
+            cursor: grab
+        }
 
-    .scale-label {
-      position: absolute;
-      color: var(--muted);
-      text-align: center;
-      font-size: 18px;
-      line-height: 1.1;
-      z-index: 3;
-    }
+        .timer-ticks {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            pointer-events: none;
+            transform-origin: 50% 50%
+        }
 
-    .scale-label span { font-size: 12px; }
-    .scale-30 { left: 0; top: 50%; transform: translateY(-50%); }
-    .scale-60 { top: 0; left: 50%; transform: translateX(-50%); }
-    .scale-90 { right: 0; top: 50%; transform: translateY(-50%); }
-    .scale-120 { bottom: 0; left: 50%; transform: translateX(-50%); }
+        .tick {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 3px;
+            height: 18px;
+            background: rgba(244, 244, 240, .82);
+            border-radius: 99px;
+            transform-origin: center center
+        }
 
-    .timer-lock {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: rgba(0,0,0,0.97);
-      color: var(--text);
-      padding: 24px;
-      place-items: center;
-      text-align: center;
-    }
+        .tick.major {
+            opacity: 0
+        }
 
-    .timer-lock-inner {
-      width: min(720px, 100%);
-      display: grid;
-      gap: 22px;
-    }
+        .timer-number {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            pointer-events: none;
+            font-size: clamp(58px, 12dvh, 132px);
+            font-weight: 900;
+            letter-spacing: -.1em;
+            line-height: .8
+        }
 
-    .lock-time {
-      font-size: clamp(70px, 22vw, 180px);
-      font-weight: 900;
-      letter-spacing: -0.09em;
-      line-height: 0.85;
-    }
+        .timer-number span {
+            display: block;
+            font-size: clamp(13px, 2.4dvh, 24px);
+            letter-spacing: -.02em;
+            color: var(--muted);
+            margin-top: 8px
+        }
 
-    .lock-title {
-      font-size: clamp(28px, 8vw, 68px);
-      font-weight: 900;
-      line-height: 0.95;
-      letter-spacing: -0.08em;
-    }
+        .scale-label {
+            position: absolute;
+            color: var(--muted);
+            font-size: clamp(20px, 5vw, 34px);
+            line-height: 1.05;
+            z-index: 5;
+            text-align: center;
+            width: auto;
+            background: rgba(17, 17, 17, .92);
+            padding: 4px 8px;
+            border-radius: 12px
+        }
 
-    @media (min-width: 760px) {
-      .actions { grid-template-columns: 1.4fr 0.8fr 0.8fr; }
-      footer { max-width: 680px; width: 100%; margin: 0 auto; }
-    }
-  </style>
+        .scale-label small {
+            display: block;
+            font-size: .52em;
+            margin-top: 2px
+        }
+
+        .scale-30 {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%)
+        }
+
+        .scale-60 {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%)
+        }
+
+        .scale-90 {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%)
+        }
+
+        .scale-120 {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%)
+        }
+
+        .increment-pill {
+            color: var(--muted);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 999px;
+            padding: 8px 14px;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            font-size: clamp(10px, 1.6dvh, 12px)
+        }
+
+        @media (max-width:760px) {
+            .app {
+                padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+                gap: 14px
+            }
+
+            .brand strong {
+                font-size: clamp(42px, 11vw, 72px)
+            }
+
+            .focus-card {
+                border-radius: 34px;
+                padding: clamp(28px, 6vw, 56px);
+                gap: 34px
+            }
+
+            .task-title {
+                font-size: clamp(58px, 16vw, 148px)
+            }
+
+            .task-body {
+                font-size: clamp(16px, 3.8vw, 22px)
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+                gap: 14px
+            }
+
+            .button {
+                min-height: 64px;
+                font-size: 16px;
+                padding: 20px
+            }
+
+            .footer-button {
+                padding: 16px 10px
+            }
+        }
+    </style>
 </head>
 
 <body>
-  <div class="app">
-    <header>
-      <div class="brand">
-        <strong>ONE THING</strong>
-        <span>Full screen task focus</span>
-      </div>
-      <div class="stats" id="stats">0 tasks<br>0 done</div>
-    </header>
+    <div class="app">
+        <header>
+            <div class="brand"><strong>ONE THING</strong><br><span>Full screen task focus</span></div>
+            <div class="stats" id="stats">0 tasks<br>0 done</div>
+        </header>
+        <main id="main"></main>
+        <footer>
+            <button class="footer-button" id="calendarBtn">Calendar</button>
+            <button class="footer-button" id="voiceBtn">Add task</button>
+            <button class="footer-button" id="queueBtn">Queue</button>
+        </footer>
+    </div>
 
-    <main id="main"></main>
-
-    <footer>
-      <button class="footer-button" id="voiceBtn">Voice</button>
-      <button class="footer-button" id="calendarBtn">Calendar</button>
-      <button class="footer-button" id="listBtn">Queue</button>
-    </footer>
-  </div>
-
-  <dialog id="voiceDialog">
-    <div class="modal-content">
-      <div class="modal-head">
-        <h2>Add task</h2>
-        <button class="icon-button" type="button" data-close="voiceDialog">×</button>
-      </div>
-
-      <p class="voice-status" id="voiceStatus">Type the task or press record and speak it.</p>
-
-      <div class="field-label">Task / voice transcript</div>
-      <textarea id="voiceText" placeholder="Your task will appear here."></textarea>
-
-      <div class="row">
-        <div>
-          <div class="field-label">Area</div>
-          <select id="voiceArea">
-            <option>WORK</option>
-            <option>HOME</option>
-            <option>LIFE</option>
-            <option>CREATIVE</option>
-          </select>
+    <dialog id="taskDialog">
+        <div class="modal">
+            <div class="modal-head">
+                <h2>Add task</h2><button class="icon-button" type="button" data-close="taskDialog">×</button>
+            </div>
+            <div class="small" id="voiceStatus">Keyboard opens automatically. Use the keyboard mic or type.</div>
+            <textarea id="taskInput" placeholder="Say or type your task" inputmode="text" autocomplete="off" autocapitalize="sentences"></textarea>
+            <div class="row">
+                <div>
+                    <div class="field-label">Area</div><select id="taskArea">
+                        <option>WORK</option>
+                        <option>HOME</option>
+                        <option>LIFE</option>
+                        <option>CREATIVE</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="field-label">Date</div><input id="taskDate" type="date">
+                </div>
+            </div>
+            <button class="button secondary" id="recordBtn" type="button">Start voice</button>
+            <button class="button" id="saveBtn" type="button">Save task</button>
         </div>
-        <div>
-          <div class="field-label">Priority</div>
-          <select id="voicePriority">
-            <option>Now</option>
-            <option>Next</option>
-            <option>Later</option>
-          </select>
+    </dialog>
+
+    <dialog id="queueDialog">
+        <div class="modal">
+            <div class="modal-head">
+                <h2>Queue</h2><button class="icon-button" type="button" data-close="queueDialog">×</button>
+            </div>
+            <div class="list" id="queueList"></div>
+            <button class="button secondary" id="exportBtn" type="button">Export</button>
+            <button class="button secondary danger" id="resetBtn" type="button">Reset</button>
         </div>
-      </div>
+    </dialog>
 
-      <div class="field-label">Due date</div>
-      <input id="voiceDueDate" type="date" />
+    <dialog id="calendarDialog">
+        <div class="modal">
+            <div class="modal-head">
+                <h2>Calendar</h2><button class="icon-button" type="button" data-close="calendarDialog">×</button>
+            </div>
+            <div class="list" id="calendarList"></div>
+        </div>
+    </dialog>
 
-      <div class="field-label">Focus timer</div>
-      <div class="spin-control">
-        <div class="dial" data-dial="voice">
-          <div class="dial-ring" data-ring="voice"></div>
-          <div class="dial-centre">
+    <dialog id="timerDialog">
+        <div class="timer-modal">
+            <div style="width:100%;display:flex;justify-content:flex-start"><button class="icon-button" type="button" id="closeTimerBtn">×</button></div>
             <div>
-              <div class="dial-number" data-timer-value="voice">30</div>
-              <div class="dial-unit">min</div>
+                <div class="timer-heading-small">Set focus time</div>
+                <div class="timer-spin-title">Spin</div>
+                <div class="timer-spin-sub">to set time</div>
+                <div class="timer-end">◷ <span id="timerEndText">Ends in 30 min</span></div>
             </div>
-          </div>
+            <div class="timer-scale">
+                <div class="scale-label scale-30">0<small>min</small></div>
+                <div class="scale-label scale-60">30<small>min</small></div>
+                <div class="scale-label scale-90">60<small>min</small></div>
+                <div class="scale-label scale-120">90<small>min</small></div>
+                <div class="timer-ring" id="timerRing">
+                    <div class="timer-ticks" id="timerTicks"></div>
+                    <div class="timer-number">
+                        <div>
+                            <div id="timerValue">30</div><span>min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="increment-pill">In increments of 10 min</div>
+            <button class="button" style="width:100%" id="startTimerBtn" type="button">Continue</button>
         </div>
-        <div class="voice-status">Spin to set time / 10 min increments</div>
-        <input id="voiceTimerWheel" type="hidden" value="30" />
-      </div>
+    </dialog>
 
-      <button class="button secondary" id="recordBtn">Start recording</button>
-      <button class="button" id="saveVoiceBtn">Save task</button>
-    </div>
-  </dialog>
-
-  <dialog id="listDialog">
-    <div class="modal-content">
-      <div class="modal-head">
-        <h2>Queue</h2>
-        <button class="icon-button" type="button" data-close="listDialog">×</button>
-      </div>
-      <div class="list-controls">
-        <button class="button secondary" id="exportBtn">Export</button>
-        <button class="button secondary danger" id="resetBtn">Reset</button>
-      </div>
-      <div class="task-list" id="taskList"></div>
-    </div>
-  </dialog>
-
-  <dialog id="calendarDialog">
-    <div class="modal-content">
-      <div class="modal-head">
-        <h2>Calendar</h2>
-        <button class="icon-button" type="button" data-close="calendarDialog">×</button>
-      </div>
-      <div id="calendarList" class="task-list"></div>
-    </div>
-  </dialog>
-
-  <dialog id="timerDialog">
-    <div class="modal-content" style="min-height:80dvh;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:28px 20px;">
-      <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
-        <button class="icon-button" type="button" data-close="timerDialog">×</button>
-        <div class="voice-status">Set focus time</div>
-        <div style="width:40px"></div>
-      </div>
-
-      <div style="display:grid;gap:10px;text-align:center;">
-        <div style="font-size:clamp(52px,16vw,120px);font-weight:900;letter-spacing:-.08em;line-height:.9;">Spin</div>
-        <div style="font-size:clamp(22px,6vw,42px);color:#8d8d86;letter-spacing:-.04em;">to set time</div>
-        <div style="display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#171717;border:1px solid #2a2a2a;padding:14px 18px;border-radius:18px;margin:auto;">
-          <span>◷</span>
-          <span id="timerEndText">Ends in 30 min</span>
+    <div class="timer-lock" id="timerLock">
+        <div class="lock-inner">
+            <div class="small">Focus lock</div>
+            <div class="lock-time" id="lockTime">00:00</div>
+            <div class="lock-task" id="lockTask">Focus</div>
+            <div class="note">The app is locked until the timer finishes. Stay with this one task.</div>
         </div>
-      </div>
-
-      <div class="timer-scale">
-        <div class="scale-label scale-60">60<br><span>min</span></div>
-        <div class="scale-label scale-30">30<br><span>min</span></div>
-        <div class="scale-label scale-90">90<br><span>min</span></div>
-        <div class="scale-label scale-120">120<br><span>min</span></div>
-        <div class="dial large" data-dial="large">
-          <div class="dial-ring" data-ring="large"></div>
-          <div class="dial-centre">
-            <div>
-              <div class="dial-number" data-timer-value="large">30</div>
-              <div class="dial-unit">min</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="voice-status" style="border:1px solid var(--line);border-radius:999px;padding:8px 12px;">In increments of 10 min</div>
-      <button class="button" style="width:100%;" id="startTimerBtn">Continue</button>
     </div>
-  </dialog>
 
-  <div id="timerLock" class="timer-lock">
-    <div class="timer-lock-inner">
-      <div class="label">Focus lock</div>
-      <div id="lockTimerDisplay" class="lock-time">00:00</div>
-      <div id="lockTaskTitle" class="lock-title">Focus</div>
-      <div class="note" style="margin:auto;">The app is locked until the timer finishes. Stay with this one task.</div>
-    </div>
-  </div>
+    <script>
+        (function() {
+            var STORAGE_KEY = 'oneThingTasksStable';
+            var TIMER_END_KEY = 'oneThingTimerEndStable';
+            var TIMER_TITLE_KEY = 'oneThingTimerTitleStable';
+            var NEW_LINE = String.fromCharCode(10);
+            var tasks = [];
+            var timerEnd = 0;
+            var timerTitle = '';
+            var timerInterval = null;
+            var recognition = null;
+            var selectedTask = null;
+            var selectedMinutes = 30;
+            var main = document.getElementById('main');
+            var stats = document.getElementById('stats');
+            var taskDialog = document.getElementById('taskDialog');
+            var queueDialog = document.getElementById('queueDialog');
+            var calendarDialog = document.getElementById('calendarDialog');
+            var timerDialog = document.getElementById('timerDialog');
+            var queueList = document.getElementById('queueList');
+            var calendarList = document.getElementById('calendarList');
+            var timerLock = document.getElementById('timerLock');
+            var lockTime = document.getElementById('lockTime');
+            var lockTask = document.getElementById('lockTask');
+            var taskInput = document.getElementById('taskInput');
+            var taskArea = document.getElementById('taskArea');
+            var taskDate = document.getElementById('taskDate');
+            var voiceStatus = document.getElementById('voiceStatus');
+            var recordBtn = document.getElementById('recordBtn');
+            var timerRing = document.getElementById('timerRing');
+            var timerTicks = document.getElementById('timerTicks');
+            var timerValue = document.getElementById('timerValue');
+            var timerEndText = document.getElementById('timerEndText');
 
-  <script>
-    const STORAGE_KEY = "oneThingTasksV1";
-    const TIMER_KEY = "oneThingTimerEndsAt";
-    const LOCKED_TASK_KEY = "oneThingLockedTaskId";
+            function load() {
+                try {
+                    tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+                } catch (e) {
+                    tasks = []
+                }
+                timerEnd = Number(localStorage.getItem(TIMER_END_KEY) || 0);
+                timerTitle = localStorage.getItem(TIMER_TITLE_KEY) || ''
+            }
 
-    let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    let timerEndsAt = Number(localStorage.getItem(TIMER_KEY) || 0);
-    let activeTimer = null;
-    let recognition = null;
-    let isRecording = false;
-    let spinTimerMinutes = 30;
+            function save() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+                render()
+            }
 
-    const main = document.getElementById("main");
-    const stats = document.getElementById("stats");
-    const voiceDialog = document.getElementById("voiceDialog");
-    const listDialog = document.getElementById("listDialog");
-    const calendarDialog = document.getElementById("calendarDialog");
-    const timerDialog = document.getElementById("timerDialog");
-    const timerLock = document.getElementById("timerLock");
-    const taskList = document.getElementById("taskList");
-    const calendarList = document.getElementById("calendarList");
-    const voiceText = document.getElementById("voiceText");
-    const voiceArea = document.getElementById("voiceArea");
-    const voicePriority = document.getElementById("voicePriority");
-    const voiceDueDate = document.getElementById("voiceDueDate");
-    const voiceStatus = document.getElementById("voiceStatus");
-    const recordBtn = document.getElementById("recordBtn");
-    const lockTimerDisplay = document.getElementById("lockTimerDisplay");
-    const lockTaskTitle = document.getElementById("lockTaskTitle");
+            function availableTasks() {
+                return tasks.filter(function(t) {
+                    return !t.done && !t.parked
+                })
+            }
 
-    function escapeHtml(value) {
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+            function parkedTasks() {
+                return tasks.filter(function(t) {
+                    return !t.done && t.parked
+                })
+            }
 
-    function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      render();
-    }
+            function completedTasks() {
+                return tasks.filter(function(t) {
+                    return t.done
+                })
+            }
 
-    function activeTasks() { return tasks.filter(task => !task.done); }
-    function completedTasks() { return tasks.filter(task => task.done); }
-    function isSnoozed(task) { return task.snoozedUntil && task.snoozedUntil > Date.now(); }
+            function currentTask() {
+                var list = availableTasks().slice().sort(function(a, b) {
+                    return (a.createdAt || 0) - (b.createdAt || 0)
+                });
+                return list[0] || null
+            }
 
-    function getCurrentTask() {
-      const priorityOrder = { Now: 0, Next: 1, Later: 2 };
-      return activeTasks()
-        .filter(task => !isSnoozed(task))
-        .sort((a, b) => {
-          const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-          return priorityDiff || a.createdAt - b.createdAt;
-        })[0];
-    }
+            function formatTime(ms) {
+                var total = Math.max(0, Math.ceil(ms / 1000));
+                var min = Math.floor(total / 60);
+                var sec = total % 60;
+                return String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0')
+            }
 
-    function getLockedTask() {
-      const lockedId = localStorage.getItem(LOCKED_TASK_KEY);
-      return tasks.find(task => task.id === lockedId) || getCurrentTask();
-    }
+            function splitTaskText(text) {
+                var clean = String(text || '').trim();
+                if (!clean) return {
+                    heading: 'Untitled task',
+                    body: ''
+                };
+                var indexes = [];
+                ['. ', '! ', '? '].forEach(function(marker) {
+                    var pos = clean.indexOf(marker);
+                    if (pos > -1) indexes.push(pos)
+                });
+                var line = clean.indexOf(NEW_LINE);
+                if (line > -1) indexes.push(line - 1);
+                if (!indexes.length) return {
+                    heading: clean,
+                    body: ''
+                };
+                var splitAt = Math.min.apply(null, indexes);
+                var heading = clean.slice(0, splitAt + 1).replace('.', '').replace('!', '').replace('?', '').trim();
+                var body = clean.slice(splitAt + 1).trim();
+                return {
+                    heading: heading || clean,
+                    body: body
+                }
+            }
 
-    function getGreeting() {
-      const hour = new Date().getHours();
-      if (hour < 12) return "GOOD MORNING";
-      if (hour < 18) return "GOOD AFTERNOON";
-      return "GOOD EVENING";
-    }
+            function addPill(parent, text) {
+                var pill = document.createElement('div');
+                pill.className = 'pill';
+                pill.textContent = text;
+                parent.appendChild(pill)
+            }
+            var audioContext = null;
+            var lastTickSound = 0;
 
-    function addTask({ title, note = "", area = "WORK", priority = "Now", timer = 30, dueDate = "" }) {
-      tasks.push({
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        title: title.trim(),
-        note: note.trim(),
-        area,
-        priority,
-        timer,
-        dueDate,
-        done: false,
-        createdAt: Date.now()
-      });
-      save();
-    }
+            function initAudio() {
+                if (!audioContext) {
+                    try {
+                        audioContext = new(window.AudioContext || window.webkitAudioContext)()
+                    } catch (e) {
+                        audioContext = null
+                    }
+                }
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume()
+                }
+            }
 
-    function formatTimer(ms) {
-      if (ms <= 0) return "00:00";
-      const totalSeconds = Math.ceil(ms / 1000);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    }
+            function playTickSound() {
+                if (!audioContext) return;
+                var now = audioContext.currentTime;
+                if (Date.now() - lastTickSound < 45) return;
+                lastTickSound = Date.now();
+                var osc = audioContext.createOscillator();
+                var gain = audioContext.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.exponentialRampToValueAtTime(1320, now + 0.025);
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(0.045, now + 0.006);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.start(now);
+                osc.stop(now + 0.05)
+            }
 
-    function getTimerDisplay() {
-      if (!timerEndsAt || timerEndsAt <= Date.now()) return "";
-      return formatTimer(timerEndsAt - Date.now());
-    }
+            function playDoneSound() {
+                initAudio();
+                if (!audioContext) return;
+                var now = audioContext.currentTime;
+                var notes = [523.25, 659.25, 783.99, 1046.5];
+                notes.forEach(function(freq, index) {
+                    var osc = audioContext.createOscillator();
+                    var gain = audioContext.createGain();
+                    osc.type = index === 3 ? 'triangle' : 'sine';
+                    osc.frequency.setValueAtTime(freq, now + index * 0.13);
+                    gain.gain.setValueAtTime(0.0001, now + index * 0.13);
+                    gain.gain.exponentialRampToValueAtTime(0.12, now + index * 0.13 + 0.025);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.13 + 0.32);
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.start(now + index * 0.13);
+                    osc.stop(now + index * 0.13 + 0.34)
+                });
+                var low = audioContext.createOscillator();
+                var lowGain = audioContext.createGain();
+                low.type = 'sine';
+                low.frequency.setValueAtTime(196, now);
+                lowGain.gain.setValueAtTime(0.0001, now);
+                lowGain.gain.exponentialRampToValueAtTime(0.035, now + 0.04);
+                lowGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+                low.connect(lowGain);
+                lowGain.connect(audioContext.destination);
+                low.start(now);
+                low.stop(now + 0.7)
+            }
 
-    function render() {
-      const current = getCurrentTask();
-      const snoozedCount = activeTasks().filter(task => isSnoozed(task)).length;
-      const timerDisplay = getTimerDisplay();
+            function makeButton(text, className, onClick) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = className;
+                b.textContent = text;
+                b.onclick = onClick;
+                return b
+            }
 
-      stats.innerHTML = `${activeTasks().filter(task => !isSnoozed(task)).length} tasks<br>${completedTasks().length} done${snoozedCount ? `<br>${snoozedCount} parked` : ""}`;
+            function startTimer(title, minutes) {
+                var duration = Number(minutes);
+                if (!duration || duration < 1) duration = 15;
+                timerTitle = title || 'Focus';
+                timerEnd = Date.now() + duration * 60000;
+                localStorage.setItem(TIMER_END_KEY, String(timerEnd));
+                localStorage.setItem(TIMER_TITLE_KEY, timerTitle);
+                timerLock.style.display = 'grid';
+                lockTask.textContent = timerTitle;
+                startTimerLoop()
+            }
 
-      if (!current) {
-        main.innerHTML = `
-          <section class="focus-card empty">
-            <div>
-              <div style="margin-bottom:20px;color:#8d8d86;font-size:12px;letter-spacing:.1em;text-transform:uppercase;">${getGreeting()}</div>
-              <strong>NOTHING NEXT</strong>
-              Your brain is clear for now.${snoozedCount ? " Some tasks are parked for later." : ""}
-            </div>
-          </section>
-        `;
-        renderList();
-        renderCalendar();
-        return;
-      }
+            function stopTimer() {
+                timerEnd = 0;
+                timerTitle = '';
+                localStorage.removeItem(TIMER_END_KEY);
+                localStorage.removeItem(TIMER_TITLE_KEY);
+                timerLock.style.display = 'none';
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null
+                }
+            }
 
-      const completedToday = completedTasks().filter(task => {
-        if (!task.completedAt) return false;
-        return new Date(task.completedAt).toDateString() === new Date().toDateString();
-      });
+            function startTimerLoop() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null
+                }
 
-      main.innerHTML = `
-        <section class="focus-card">
-          <div>
-            <div class="label">${getGreeting()}</div>
-            ${timerDisplay ? `<div style="font-size:clamp(42px,12vw,96px);line-height:.9;font-weight:900;letter-spacing:-.08em;margin-bottom:22px;">${timerDisplay}</div>` : ""}
-            <div class="task-title">${escapeHtml(current.title)}</div>
-            <div class="task-meta">
-              <span class="pill">${escapeHtml(current.area)}</span>
-              <span class="pill">${escapeHtml(current.priority)}</span>
-              <span class="pill">ONE TASK ONLY</span>
-              ${current.timer ? `<span class="pill">${current.timer} MIN</span>` : ""}
-              ${current.dueDate ? `<span class="pill">${escapeHtml(current.dueDate)}</span>` : ""}
-            </div>
-          </div>
+                function tick() {
+                    var remaining = timerEnd - Date.now();
+                    if (!timerEnd || remaining <= 0) {
+                        var wasRunning = Boolean(timerEnd);
+                        stopTimer();
+                        if (wasRunning) {
+                            playDoneSound();
+                            setTimeout(function() {
+                                alert('Timer complete')
+                            }, 250)
+                        }
+                        render();
+                        return
+                    }
+                    timerLock.style.display = 'grid';
+                    lockTime.textContent = formatTime(remaining);
+                    lockTask.textContent = timerTitle || 'Focus'
+                }
+                tick();
+                timerInterval = setInterval(tick, 1000)
+            }
 
-          ${current.note ? `<div class="note">${escapeHtml(current.note)}</div>` : `<div class="note">Stay with this until it is complete.</div>`}
+            function setTimerMinutes(minutes) {
+                var value = Math.round(Number(minutes) / 10) * 10;
+                if (value < 0) value = 0;
+                if (value > 120) value = 120;
+                if (value !== selectedMinutes) playTickSound();
+                selectedMinutes = value;
+                timerValue.textContent = String(value);
+                timerEndText.textContent = 'Ends in ' + value + ' min';
+                timerTicks.style.transform = 'rotate(' + (value * 3) + 'deg)'
+            }
 
-          <div class="actions">
-            <button class="button" onclick="completeCurrent('${current.id}')">Complete task</button>
-            <button class="button secondary" onclick="notNow('${current.id}')">Not now</button>
-            <button class="button secondary" onclick="openTimerDialog()">Timer</button>
-          </div>
+            function openTimer(task) {
+                selectedTask = task;
+                setTimerMinutes(task.timer || 30);
+                timerDialog.showModal()
+            }
 
-          ${completedToday.length ? `
-            <div style="border-top:1px solid #2a2a2a;padding-top:18px;display:grid;gap:8px;">
-              <div class="label">Today you completed</div>
-              <div class="note" style="font-size:16px;opacity:.7;">
-                ${completedToday.slice(-5).map(task => `• ${escapeHtml(task.title)}`).join("<br>")}
-              </div>
-            </div>
-          ` : ""}
-        </section>
-      `;
+            function makeTicks() {
+                timerTicks.innerHTML = '';
+                var radius = 164;
+                for (var i = 0; i < 24; i++) {
+                    var tick = document.createElement('div');
+                    tick.className = i % 6 === 0 ? 'tick major' : 'tick';
+                    tick.style.height = i % 3 === 0 ? '26px' : '16px';
+                    tick.style.transform = 'translate(-50%,-50%) rotate(' + (i * 15) + 'deg) translateY(-' + radius + 'px)';
+                    timerTicks.appendChild(tick)
+                }
+            }
 
-      renderList();
-      renderCalendar();
-    }
+            function dialMinutesFromEvent(event) {
+                var rect = timerRing.getBoundingClientRect();
+                var cx = rect.left + rect.width / 2;
+                var cy = rect.top + rect.height / 2;
+                var angle = Math.atan2(event.clientY - cy, event.clientX - cx) * 180 / Math.PI + 90;
+                if (angle < 0) angle += 360;
+                return angle / 360 * 120
+            }
 
-    function renderList() {
-      if (!tasks.length) {
-        taskList.innerHTML = `<div class="voice-status">No tasks yet.</div>`;
-        return;
-      }
+            function enableDial() {
+                var dragging = false;
+                timerRing.addEventListener('pointerdown', function(event) {
+                    initAudio();
+                    dragging = true;
+                    timerRing.setPointerCapture(event.pointerId);
+                    setTimerMinutes(dialMinutesFromEvent(event))
+                });
+                timerRing.addEventListener('pointermove', function(event) {
+                    if (!dragging) return;
+                    setTimerMinutes(dialMinutesFromEvent(event))
+                });
+                timerRing.addEventListener('pointerup', function(event) {
+                    dragging = false;
+                    try {
+                        timerRing.releasePointerCapture(event.pointerId)
+                    } catch (e) {}
+                });
+                timerRing.addEventListener('pointercancel', function() {
+                    dragging = false
+                })
+            }
 
-      taskList.innerHTML = tasks
-        .sort((a, b) => a.done - b.done || a.createdAt - b.createdAt)
-        .map(task => `
-          <div class="list-item">
-            <strong>${task.done ? "✓ " : ""}${escapeHtml(task.title)}</strong>
-            <span>${escapeHtml(task.area)} / ${escapeHtml(task.priority)} / ${task.timer || 30} min${task.dueDate ? ` / ${escapeHtml(task.dueDate)}` : ""} / ${task.done ? "Complete" : isSnoozed(task) ? "Parked" : "Waiting"}</span>
-            ${task.note ? `<div class="voice-status">${escapeHtml(task.note)}</div>` : ""}
-          </div>
-        `).join("");
-    }
+            function render() {
+                stats.innerHTML = availableTasks().length + ' tasks<br>' + completedTasks().length + ' done' + (parkedTasks().length ? '<br>' + parkedTasks().length + ' parked' : '');
+                main.innerHTML = '';
+                var task = currentTask();
+                var completedToday = completedTasks().filter(function(item) {
+                    return item.completedAt && new Date(item.completedAt).toDateString() === new Date().toDateString()
+                });
+                if (!task) {
+                    renderEmpty();
+                    renderQueue();
+                    renderCalendar();
+                    return
+                }
+                var parts = splitTaskText(task.note || task.title);
+                var card = document.createElement('section');
+                card.className = 'focus-card';
+                card.id = 'focusCard';
+                var top = document.createElement('div');
+                var label = document.createElement('div');
+                label.className = 'muted';
+                var hour = new Date().getHours();
+                label.textContent = hour < 12 ? 'GOOD MORNING' : hour < 18 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
+                var title = document.createElement('div');
+                title.className = 'task-title';
+                title.textContent = parts.heading;
+                var body = document.createElement('div');
+                body.className = parts.body ? 'task-body' : 'note';
+                body.textContent = parts.body || 'Stay with this one thing.';
+                var pills = document.createElement('div');
+                pills.className = 'pills';
+                addPill(pills, task.area || 'WORK');
+                addPill(pills, 'NOW');
+                addPill(pills, 'ONE TASK ONLY');
+                addPill(pills, String(task.timer || 30) + ' MIN');
+                if (task.date) addPill(pills, task.date);
+                top.appendChild(label);
+                top.appendChild(title);
+                top.appendChild(pills);
+                var hint = document.createElement('div');
+                hint.className = 'muted';
+                hint.textContent = 'Swipe left or right to park task';
+                var actions = document.createElement('div');
+                actions.className = 'actions';
+                actions.appendChild(makeButton('Complete Task', 'button', function() {
+                    task.done = true;
+                    task.parked = false;
+                    task.completedAt = Date.now();
+                    save()
+                }));
+                actions.appendChild(makeButton('Not Now', 'button secondary', function() {
+                    task.parked = true;
+                    save()
+                }));
+                actions.appendChild(makeButton('Timer', 'button secondary', function() {
+                    openTimer(task)
+                }));
+                card.appendChild(top);
+                card.appendChild(body);
+                card.appendChild(actions);
+                if (completedToday.length) {
+                    var completedBlock = document.createElement('div');
+                    completedBlock.className = 'completed-block';
+                    var completedLabel = document.createElement('div');
+                    completedLabel.className = 'muted';
+                    completedLabel.textContent = 'TODAY YOU COMPLETED';
+                    var completedList = document.createElement('div');
+                    completedList.className = 'completed-list';
+                    completedToday.slice(-4).forEach(function(item) {
+                        var p = splitTaskText(item.note || item.title);
+                        var line = document.createElement('div');
+                        line.textContent = '• ' + p.heading;
+                        completedList.appendChild(line)
+                    });
+                    completedBlock.appendChild(completedLabel);
+                    completedBlock.appendChild(completedList);
+                    card.appendChild(completedBlock)
+                }
+                main.appendChild(card);
+                attachSwipe(task);
+                renderQueue();
+                renderCalendar()
+            }
 
-    function renderCalendar() {
-      const datedTasks = tasks
-        .filter(task => task.dueDate)
-        .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+            function renderEmpty() {
+                var hasParked = parkedTasks().length > 0;
+                var card = document.createElement('section');
+                card.className = 'focus-card empty';
+                var wrap = document.createElement('div');
+                var title = document.createElement('strong');
+                title.textContent = hasParked ? 'ALL TASKS PARKED' : 'NOTHING NEXT';
+                var note = document.createElement('div');
+                note.className = 'note';
+                note.textContent = hasParked ? 'You have moved through all tasks.' : 'Your mind is clear for now.';
+                wrap.appendChild(title);
+                wrap.appendChild(note);
+                card.appendChild(wrap);
+                if (hasParked) {
+                    var actions = document.createElement('div');
+                    actions.className = 'actions';
+                    actions.style.width = '100%';
+                    actions.appendChild(makeButton('15 Min Break', 'button', function() {
+                        startTimer('15 minute break', 15)
+                    }));
+                    actions.appendChild(makeButton('Restore Tasks', 'button secondary', function() {
+                        tasks.forEach(function(item) {
+                            if (!item.done) item.parked = false
+                        });
+                        save()
+                    }));
+                    card.appendChild(actions)
+                }
+                main.appendChild(card)
+            }
 
-      if (!datedTasks.length) {
-        calendarList.innerHTML = `<div class="voice-status">No dated tasks yet.</div>`;
-        return;
-      }
+            function renderQueue() {
+                queueList.innerHTML = '';
+                if (!tasks.length) {
+                    var empty = document.createElement('div');
+                    empty.className = 'small';
+                    empty.textContent = 'No tasks yet.';
+                    queueList.appendChild(empty);
+                    return
+                }
+                tasks.forEach(function(task) {
+                    var item = document.createElement('div');
+                    item.className = 'item';
+                    var strong = document.createElement('strong');
+                    strong.textContent = (task.done ? '✓ ' : '') + task.title;
+                    var span = document.createElement('span');
+                    span.className = 'small';
+                    span.textContent = (task.area || 'WORK') + ' / ' + (task.done ? 'Complete' : task.parked ? 'Parked' : 'Active') + (task.date ? ' / ' + task.date : '');
+                    item.appendChild(strong);
+                    item.appendChild(span);
+                    item.onclick = function() {
+                        if (!task.done) {
+                            task.parked = false;
+                            save();
+                            queueDialog.close()
+                        }
+                    };
+                    queueList.appendChild(item)
+                })
+            }
 
-      let currentDate = "";
-      calendarList.innerHTML = datedTasks.map(task => {
-        const heading = task.dueDate !== currentDate
-          ? `<div class="label" style="margin:14px 0 4px;">${escapeHtml(task.dueDate)}</div>`
-          : "";
-        currentDate = task.dueDate;
-        return `
-          ${heading}
-          <div class="list-item">
-            <strong>${task.done ? "✓ " : ""}${escapeHtml(task.title)}</strong>
-            <span>${escapeHtml(task.area)} / ${escapeHtml(task.priority)} / ${task.timer || 30} min</span>
-          </div>
-        `;
-      }).join("");
-    }
+            function renderCalendar() {
+                calendarList.innerHTML = '';
+                var dated = tasks.filter(function(task) {
+                    return task.date
+                }).sort(function(a, b) {
+                    return String(a.date).localeCompare(String(b.date))
+                });
+                if (!dated.length) {
+                    var empty = document.createElement('div');
+                    empty.className = 'small';
+                    empty.textContent = 'No dated tasks yet.';
+                    calendarList.appendChild(empty);
+                    return
+                }
+                dated.forEach(function(task) {
+                    var item = document.createElement('div');
+                    item.className = 'item';
+                    var strong = document.createElement('strong');
+                    strong.textContent = task.title;
+                    var span = document.createElement('span');
+                    span.className = 'small';
+                    span.textContent = task.date + ' / ' + (task.area || 'WORK');
+                    item.appendChild(strong);
+                    item.appendChild(span);
+                    item.onclick = function() {
+                        if (!task.done) {
+                            task.parked = false;
+                            save();
+                            calendarDialog.close()
+                        }
+                    };
+                    calendarList.appendChild(item)
+                })
+            }
 
-    function completeCurrent(id) {
-      const task = tasks.find(item => item.id === id);
-      if (!task) return;
-      task.done = true;
-      task.completedAt = Date.now();
-      clearCountdown(false);
-      save();
-    }
+            function attachSwipe(task) {
+                var card = document.getElementById('focusCard');
+                if (!card) return;
+                var startX = 0;
+                var startY = 0;
+                card.addEventListener('touchstart', function(event) {
+                    startX = event.touches[0].clientX;
+                    startY = event.touches[0].clientY
+                }, {
+                    passive: true
+                });
+                card.addEventListener('touchend', function(event) {
+                    var dx = event.changedTouches[0].clientX - startX;
+                    var dy = event.changedTouches[0].clientY - startY;
+                    if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+                        task.parked = true;
+                        save()
+                    }
+                }, {
+                    passive: true
+                })
+            }
 
-    function notNow(id) {
-      if (timerEndsAt) return;
-      const task = tasks.find(item => item.id === id);
-      if (!task) return;
-      task.snoozedUntil = Date.now() + 1000 * 60 * 30;
-      save();
-    }
+            function openCapture() {
+                taskInput.value = '';
+                taskDate.value = '';
+                taskArea.value = 'WORK';
+                taskDialog.showModal();
+                setTimeout(function() {
+                    taskInput.focus();
+                    startRecording()
+                }, 250)
+            }
 
-    function startCountdown(minutes) {
-      const current = getCurrentTask();
-      if (current) localStorage.setItem(LOCKED_TASK_KEY, current.id);
-      timerEndsAt = Date.now() + minutes * 60 * 1000;
-      localStorage.setItem(TIMER_KEY, String(timerEndsAt));
-      timerDialog.close();
-      tickTimer();
-      render();
-    }
+            function startRecording() {
+                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    voiceStatus.textContent = 'Voice unavailable. Use your keyboard mic or type manually.';
+                    recordBtn.textContent = 'Voice unavailable';
+                    return
+                }
+                if (!recognition) {
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+                    recognition.lang = 'en-AU';
+                    recognition.onresult = function(event) {
+                        var text = '';
+                        for (var i = event.resultIndex; i < event.results.length; i++) {
+                            text += event.results[i][0].transcript
+                        }
+                        taskInput.value = text
+                    };
+                    recognition.onend = function() {
+                        recordBtn.textContent = 'Start voice again'
+                    }
+                }
+                try {
+                    recognition.start();
+                    recordBtn.textContent = 'Listening... tap to restart';
+                    voiceStatus.textContent = 'Listening now. You can also use the keyboard mic.'
+                } catch (error) {
+                    recordBtn.textContent = 'Start voice again'
+                }
+            }
 
-    function clearCountdown(shouldRender = true) {
-      timerEndsAt = 0;
-      localStorage.removeItem(TIMER_KEY);
-      localStorage.removeItem(LOCKED_TASK_KEY);
-      if (activeTimer) clearTimeout(activeTimer);
-      timerLock.style.display = "none";
-      if (shouldRender) render();
-    }
+            function parkCurrentTask() {
+                var task = currentTask();
+                if (!task) return;
+                task.parked = true;
+                save()
+            }
+            document.addEventListener('keydown', function(event) {
+                if (taskDialog.open || queueDialog.open || calendarDialog.open || timerDialog.open) return;
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    parkCurrentTask()
+                }
+            });
+            document.getElementById('voiceBtn').onclick = openCapture;
+            document.getElementById('queueBtn').onclick = function() {
+                renderQueue();
+                queueDialog.showModal()
+            };
+            document.getElementById('calendarBtn').onclick = function() {
+                renderCalendar();
+                calendarDialog.showModal()
+            };
+            document.getElementById('closeTimerBtn').onclick = function() {
+                timerDialog.close()
+            };
+            document.getElementById('startTimerBtn').onclick = function() {
+                if (selectedTask) {
+                    selectedTask.timer = selectedMinutes;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+                    startTimer(selectedTask.title, selectedMinutes);
+                    timerDialog.close();
+                    render()
+                }
+            };
+            document.querySelectorAll('[data-close]').forEach(function(button) {
+                button.onclick = function() {
+                    document.getElementById(button.getAttribute('data-close')).close()
+                }
+            });
+            recordBtn.onclick = function() {
+                try {
+                    if (recognition) recognition.stop()
+                } catch (error) {}
+                setTimeout(startRecording, 150)
+            };
 
-    function updateTimerLock() {
-      if (!timerEndsAt || timerEndsAt <= Date.now()) {
-        timerLock.style.display = "none";
-        return;
-      }
+            function saveTaskFromInput() {
+                var value = taskInput.value.trim();
+                if (!value) return;
+                var parts = splitTaskText(value);
+                tasks.push({
+                    id: Date.now(),
+                    title: parts.heading,
+                    note: value,
+                    area: taskArea.value,
+                    date: taskDate.value,
+                    timer: 30,
+                    done: false,
+                    parked: false,
+                    createdAt: Date.now()
+                });
+                try {
+                    if (recognition) recognition.stop()
+                } catch (error) {}
+                taskDialog.close();
+                save()
+            }
+            document.getElementById('saveBtn').onclick = saveTaskFromInput;
+            taskInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    saveTaskFromInput()
+                }
+            });
+            document.getElementById('resetBtn').onclick = function() {
+                if (!confirm('Reset all tasks?')) return;
+                tasks = [];
+                localStorage.removeItem(STORAGE_KEY);
+                render();
+                queueDialog.close()
+            };
+            document.getElementById('exportBtn').onclick = function() {
+                var lines = [];
+                tasks.forEach(function(task) {
+                    lines.push((task.done ? '[x] ' : '[ ] ') + task.title);
+                    lines.push((task.area || 'WORK') + (task.date ? ' / ' + task.date : ''));
+                    lines.push('')
+                });
+                var text = lines.join(NEW_LINE);
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text || 'No tasks')
+                }
+                alert(text || 'No tasks')
+            };
 
-      const lockedTask = getLockedTask();
-      lockTimerDisplay.textContent = getTimerDisplay();
-      lockTaskTitle.textContent = lockedTask ? lockedTask.title : "Focus";
-      timerLock.style.display = "grid";
-    }
-
-    function tickTimer() {
-      if (activeTimer) clearTimeout(activeTimer);
-
-      if (timerEndsAt && timerEndsAt <= Date.now()) {
-        timerEndsAt = 0;
-        localStorage.removeItem(TIMER_KEY);
-        localStorage.removeItem(LOCKED_TASK_KEY);
-        timerLock.style.display = "none";
-        alert("Timer complete. Check in with the task.");
-        render();
-        return;
-      }
-
-      if (timerEndsAt) {
-        updateTimerLock();
-        activeTimer = setTimeout(tickTimer, 1000);
-      } else {
-        timerLock.style.display = "none";
-      }
-    }
-
-    function makeTicks(dial) {
-      const ring = dial.querySelector(".dial-ring");
-      if (!ring || ring.dataset.ready) return;
-      const radius = dial.classList.contains("large") ? 165 : 62;
-      for (let i = 0; i < 24; i++) {
-        const tick = document.createElement("div");
-        tick.className = "dial-tick";
-        tick.style.height = i % 3 === 0 ? "22px" : "12px";
-        tick.style.transform = `translate(-50%, -50%) rotate(${i * 15}deg) translateY(-${radius}px)`;
-        ring.appendChild(tick);
-      }
-      ring.dataset.ready = "true";
-    }
-
-    function setDialValue(target, minutes) {
-      const clamped = Math.max(10, Math.min(120, Math.round(minutes / 10) * 10));
-      const value = document.querySelector(`[data-timer-value="${target}"]`);
-      const ring = document.querySelector(`[data-ring="${target}"]`);
-      const hidden = document.getElementById(`${target}TimerWheel`);
-
-      if (value) value.textContent = clamped;
-      if (hidden) hidden.value = String(clamped);
-      if (ring) ring.style.transform = `rotate(${clamped * 3}deg)`;
-      if (target === "large") {
-        spinTimerMinutes = clamped;
-        document.getElementById("timerEndText").textContent = `Ends in ${clamped} min`;
-      }
-    }
-
-    function getDialMinutes(event, dial) {
-      const rect = dial.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      let angle = Math.atan2(event.clientY - cy, event.clientX - cx) * 180 / Math.PI + 90;
-      if (angle < 0) angle += 360;
-      return (angle / 360) * 120;
-    }
-
-    function enableDial(dial) {
-      if (!dial || dial.dataset.ready) return;
-      makeTicks(dial);
-      const target = dial.dataset.dial;
-      let dragging = false;
-
-      dial.addEventListener("pointerdown", event => {
-        dragging = true;
-        dial.setPointerCapture(event.pointerId);
-        setDialValue(target, getDialMinutes(event, dial));
-      });
-
-      dial.addEventListener("pointermove", event => {
-        if (!dragging) return;
-        setDialValue(target, getDialMinutes(event, dial));
-      });
-
-      dial.addEventListener("pointerup", event => {
-        dragging = false;
-        try { dial.releasePointerCapture(event.pointerId); } catch {}
-      });
-
-      dial.addEventListener("pointercancel", () => dragging = false);
-      dial.dataset.ready = "true";
-    }
-
-    function openTimerDialog() {
-      if (timerEndsAt) return;
-      const current = getCurrentTask();
-      setDialValue("large", current && current.timer ? current.timer : 30);
-      timerDialog.showModal();
-    }
-
-    document.querySelectorAll("[data-dial]").forEach(enableDial);
-    setDialValue("voice", 30);
-    setDialValue("large", 30);
-
-    document.getElementById("voiceBtn").addEventListener("click", () => {
-      if (timerEndsAt) return;
-      voiceText.value = "";
-      voiceArea.value = "WORK";
-      voicePriority.value = "Now";
-      voiceDueDate.value = "";
-      setDialValue("voice", 30);
-      voiceDialog.showModal();
-    });
-
-    document.getElementById("calendarBtn").addEventListener("click", () => {
-      if (timerEndsAt) return;
-      renderCalendar();
-      calendarDialog.showModal();
-    });
-
-    document.getElementById("listBtn").addEventListener("click", () => {
-      if (timerEndsAt) return;
-      renderList();
-      listDialog.showModal();
-    });
-
-    document.querySelectorAll("[data-close]").forEach(button => {
-      button.addEventListener("click", () => {
-        if (button.dataset.close === "timerDialog" && timerEndsAt) return;
-        document.getElementById(button.dataset.close).close();
-      });
-    });
-
-    recordBtn.addEventListener("click", () => {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        voiceStatus.textContent = "Voice recognition is not supported in this browser. You can still type the task manually.";
-        return;
-      }
-
-      if (!recognition) {
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = "en-AU";
-
-        recognition.onresult = event => {
-          let transcript = "";
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
-          }
-          voiceText.value = transcript.trim();
-        };
-
-        recognition.onerror = () => {
-          voiceStatus.textContent = "Voice recording had an issue. Try again, or type it manually.";
-          isRecording = false;
-          recordBtn.textContent = "Start recording";
-        };
-      }
-
-      if (isRecording) {
-        recognition.stop();
-        isRecording = false;
-        recordBtn.textContent = "Start recording";
-        voiceStatus.textContent = "Recording stopped. Save it as a task when ready.";
-      } else {
-        voiceText.value = "";
-        recognition.start();
-        isRecording = true;
-        recordBtn.textContent = "Stop recording";
-        voiceStatus.textContent = "Listening... say the task clearly.";
-      }
-    });
-
-    document.getElementById("saveVoiceBtn").addEventListener("click", () => {
-      const text = voiceText.value.trim();
-      if (!text) return;
-      const firstSentence = text.split(/[.!?]/)[0].trim();
-      addTask({
-        title: firstSentence || text.slice(0, 80),
-        note: text,
-        area: voiceArea.value,
-        priority: voicePriority.value,
-        timer: Number(document.getElementById("voiceTimerWheel").value || 30),
-        dueDate: voiceDueDate.value
-      });
-      voiceDialog.close();
-    });
-
-    document.getElementById("startTimerBtn").addEventListener("click", () => {
-      startCountdown(spinTimerMinutes || 30);
-    });
-
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      if (!confirm("Reset all tasks?")) return;
-      tasks = [];
-      clearCountdown(false);
-      save();
-      listDialog.close();
-    });
-
-    document.getElementById("exportBtn").addEventListener("click", async () => {
-      const text = tasks.map(task => {
-        return `${task.done ? "[x]" : "[ ]"} ${task.title}\n${task.area} / ${task.priority} / ${task.timer || 30} min${task.dueDate ? ` / due ${task.dueDate}` : ""}\n${task.note || ""}`;
-      }).join("\n\n");
-
-      try {
-        await navigator.clipboard.writeText(text || "No tasks.");
-        alert("Tasks copied to clipboard.");
-      } catch {
-        alert(text || "No tasks.");
-      }
-    });
-
-    tickTimer();
-    render();
-  </script>
+            makeTicks();
+            enableDial();
+            load();
+            if (timerEnd > Date.now()) startTimerLoop();
+            render();
+        })();
+    </script>
 </body>
+
 </html>

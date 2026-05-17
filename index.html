@@ -681,19 +681,38 @@
         </div>
     </div>
 
+        <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+
     <script>
         (function() {
-            var STORAGE_KEY = 'oneThingTasksStable';
             var TIMER_END_KEY = 'oneThingTimerEndStable';
             var TIMER_TITLE_KEY = 'oneThingTimerTitleStable';
             var NEW_LINE = String.fromCharCode(10);
+
+            var firebaseConfig = {
+                apiKey: "AIzaSyBPvYl7yv2v0qKueEKAQbDbibiL6DsMYDY",
+                authDomain: "one-thing-4c240.firebaseapp.com",
+                projectId: "one-thing-4c240",
+                storageBucket: "one-thing-4c240.firebasestorage.app",
+                messagingSenderId: "222403854731",
+                appId: "1:222403854731:web:e8f45fed2489dca245af8e"
+            };
+
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            var db = firebase.firestore();
+            var tasksRef = db.collection('tasks');
+
             var tasks = [];
-            var timerEnd = 0;
-            var timerTitle = '';
+            var timerEnd = Number(localStorage.getItem(TIMER_END_KEY) || 0);
+            var timerTitle = localStorage.getItem(TIMER_TITLE_KEY) || '';
             var timerInterval = null;
             var recognition = null;
             var selectedTask = null;
             var selectedMinutes = 30;
+            var hasLoaded = false;
+
             var main = document.getElementById('main');
             var stats = document.getElementById('stats');
             var taskDialog = document.getElementById('taskDialog');
@@ -715,99 +734,119 @@
             var timerValue = document.getElementById('timerValue');
             var timerEndText = document.getElementById('timerEndText');
 
-            function load() {
-                try {
-                    tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-                } catch (e) {
-                    tasks = []
+            function cleanTask(task) {
+                return {
+                    id: task.id || Date.now(),
+                    title: task.title || 'Untitled task',
+                    note: task.note || task.title || '',
+                    area: task.area || 'WORK',
+                    date: task.date || '',
+                    timer: Number(task.timer || 30),
+                    done: Boolean(task.done),
+                    parked: Boolean(task.parked),
+                    createdAt: Number(task.createdAt || Date.now()),
+                    completedAt: task.completedAt || null
+                };
+            }
+
+            function subscribeToTasks() {
+                tasksRef.onSnapshot(function(snapshot) {
+                    tasks = [];
+                    snapshot.forEach(function(doc) {
+                        var data = doc.data() || {};
+                        data.firebaseId = doc.id;
+                        tasks.push(data);
+                    });
+                    hasLoaded = true;
+                    render();
+                }, function(error) {
+                    console.error('Firebase sync error:', error);
+                    hasLoaded = true;
+                    renderError('Firebase sync error. Check your Firestore rules are in test mode.');
+                });
+            }
+
+            function createTask(task) {
+                return tasksRef.add(cleanTask(task)).catch(function(error) {
+                    console.error(error);
+                    alert('Could not save task to Firebase.');
+                });
+            }
+
+            function updateTask(task, changes) {
+                Object.keys(changes).forEach(function(key) { task[key] = changes[key]; });
+                render();
+                if (!task.firebaseId) {
+                    createTask(task);
+                    return;
                 }
-                timerEnd = Number(localStorage.getItem(TIMER_END_KEY) || 0);
-                timerTitle = localStorage.getItem(TIMER_TITLE_KEY) || ''
+                tasksRef.doc(task.firebaseId).update(cleanTask(task)).catch(function(error) {
+                    console.error(error);
+                    alert('Could not update task in Firebase.');
+                });
             }
 
-            function save() {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-                render()
+            function deleteAllTasks() {
+                tasksRef.get().then(function(snapshot) {
+                    var batch = db.batch();
+                    snapshot.forEach(function(doc) { batch.delete(doc.ref); });
+                    return batch.commit();
+                }).catch(function(error) {
+                    console.error(error);
+                    alert('Could not reset tasks in Firebase.');
+                });
             }
 
-            function availableTasks() {
-                return tasks.filter(function(t) {
-                    return !t.done && !t.parked
-                })
-            }
-
-            function parkedTasks() {
-                return tasks.filter(function(t) {
-                    return !t.done && t.parked
-                })
-            }
-
-            function completedTasks() {
-                return tasks.filter(function(t) {
-                    return t.done
-                })
-            }
+            function availableTasks() { return tasks.filter(function(t) { return !t.done && !t.parked; }); }
+            function parkedTasks() { return tasks.filter(function(t) { return !t.done && t.parked; }); }
+            function completedTasks() { return tasks.filter(function(t) { return t.done; }); }
 
             function currentTask() {
-                var list = availableTasks().slice().sort(function(a, b) {
-                    return (a.createdAt || 0) - (b.createdAt || 0)
-                });
-                return list[0] || null
+                return availableTasks().slice().sort(function(a, b) {
+                    return (a.createdAt || 0) - (b.createdAt || 0);
+                })[0] || null;
             }
 
             function formatTime(ms) {
                 var total = Math.max(0, Math.ceil(ms / 1000));
                 var min = Math.floor(total / 60);
                 var sec = total % 60;
-                return String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0')
+                return String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
             }
 
             function splitTaskText(text) {
                 var clean = String(text || '').trim();
-                if (!clean) return {
-                    heading: 'Untitled task',
-                    body: ''
-                };
+                if (!clean) return { heading: 'Untitled task', body: '' };
                 var indexes = [];
                 ['. ', '! ', '? '].forEach(function(marker) {
                     var pos = clean.indexOf(marker);
-                    if (pos > -1) indexes.push(pos)
+                    if (pos > -1) indexes.push(pos);
                 });
                 var line = clean.indexOf(NEW_LINE);
                 if (line > -1) indexes.push(line - 1);
-                if (!indexes.length) return {
-                    heading: clean,
-                    body: ''
-                };
+                if (!indexes.length) return { heading: clean, body: '' };
                 var splitAt = Math.min.apply(null, indexes);
                 var heading = clean.slice(0, splitAt + 1).replace('.', '').replace('!', '').replace('?', '').trim();
                 var body = clean.slice(splitAt + 1).trim();
-                return {
-                    heading: heading || clean,
-                    body: body
-                }
+                return { heading: heading || clean, body: body };
             }
 
             function addPill(parent, text) {
                 var pill = document.createElement('div');
                 pill.className = 'pill';
                 pill.textContent = text;
-                parent.appendChild(pill)
+                parent.appendChild(pill);
             }
+
             var audioContext = null;
             var lastTickSound = 0;
 
             function initAudio() {
                 if (!audioContext) {
-                    try {
-                        audioContext = new(window.AudioContext || window.webkitAudioContext)()
-                    } catch (e) {
-                        audioContext = null
-                    }
+                    try { audioContext = new(window.AudioContext || window.webkitAudioContext)(); }
+                    catch (e) { audioContext = null; }
                 }
-                if (audioContext && audioContext.state === 'suspended') {
-                    audioContext.resume()
-                }
+                if (audioContext && audioContext.state === 'suspended') audioContext.resume();
             }
 
             function playTickSound() {
@@ -826,15 +865,14 @@
                 osc.connect(gain);
                 gain.connect(audioContext.destination);
                 osc.start(now);
-                osc.stop(now + 0.05)
+                osc.stop(now + 0.05);
             }
 
             function playDoneSound() {
                 initAudio();
                 if (!audioContext) return;
                 var now = audioContext.currentTime;
-                var notes = [523.25, 659.25, 783.99, 1046.5];
-                notes.forEach(function(freq, index) {
+                [523.25, 659.25, 783.99, 1046.5].forEach(function(freq, index) {
                     var osc = audioContext.createOscillator();
                     var gain = audioContext.createGain();
                     osc.type = index === 3 ? 'triangle' : 'sine';
@@ -845,28 +883,17 @@
                     osc.connect(gain);
                     gain.connect(audioContext.destination);
                     osc.start(now + index * 0.13);
-                    osc.stop(now + index * 0.13 + 0.34)
+                    osc.stop(now + index * 0.13 + 0.34);
                 });
-                var low = audioContext.createOscillator();
-                var lowGain = audioContext.createGain();
-                low.type = 'sine';
-                low.frequency.setValueAtTime(196, now);
-                lowGain.gain.setValueAtTime(0.0001, now);
-                lowGain.gain.exponentialRampToValueAtTime(0.035, now + 0.04);
-                lowGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
-                low.connect(lowGain);
-                lowGain.connect(audioContext.destination);
-                low.start(now);
-                low.stop(now + 0.7)
             }
 
             function makeButton(text, className, onClick) {
-                var b = document.createElement('button');
-                b.type = 'button';
-                b.className = className;
-                b.textContent = text;
-                b.onclick = onClick;
-                return b
+                var button = document.createElement('button');
+                button.type = 'button';
+                button.className = className;
+                button.textContent = text;
+                button.onclick = onClick;
+                return button;
             }
 
             function startTimer(title, minutes) {
@@ -878,7 +905,7 @@
                 localStorage.setItem(TIMER_TITLE_KEY, timerTitle);
                 timerLock.style.display = 'grid';
                 lockTask.textContent = timerTitle;
-                startTimerLoop()
+                startTimerLoop();
             }
 
             function stopTimer() {
@@ -887,18 +914,12 @@
                 localStorage.removeItem(TIMER_END_KEY);
                 localStorage.removeItem(TIMER_TITLE_KEY);
                 timerLock.style.display = 'none';
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null
-                }
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = null;
             }
 
             function startTimerLoop() {
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null
-                }
-
+                if (timerInterval) clearInterval(timerInterval);
                 function tick() {
                     var remaining = timerEnd - Date.now();
                     if (!timerEnd || remaining <= 0) {
@@ -906,19 +927,17 @@
                         stopTimer();
                         if (wasRunning) {
                             playDoneSound();
-                            setTimeout(function() {
-                                alert('Timer complete')
-                            }, 250)
+                            setTimeout(function() { alert('Timer complete'); }, 250);
                         }
                         render();
-                        return
+                        return;
                     }
                     timerLock.style.display = 'grid';
                     lockTime.textContent = formatTime(remaining);
-                    lockTask.textContent = timerTitle || 'Focus'
+                    lockTask.textContent = timerTitle || 'Focus';
                 }
                 tick();
-                timerInterval = setInterval(tick, 1000)
+                timerInterval = setInterval(tick, 1000);
             }
 
             function setTimerMinutes(minutes) {
@@ -929,13 +948,13 @@
                 selectedMinutes = value;
                 timerValue.textContent = String(value);
                 timerEndText.textContent = 'Ends in ' + value + ' min';
-                timerTicks.style.transform = 'rotate(' + (value * 3) + 'deg)'
+                timerTicks.style.transform = 'rotate(' + (value * 3) + 'deg)';
             }
 
             function openTimer(task) {
                 selectedTask = task;
                 setTimerMinutes(task.timer || 30);
-                timerDialog.showModal()
+                timerDialog.showModal();
             }
 
             function makeTicks() {
@@ -946,7 +965,7 @@
                     tick.className = i % 6 === 0 ? 'tick major' : 'tick';
                     tick.style.height = i % 3 === 0 ? '26px' : '16px';
                     tick.style.transform = 'translate(-50%,-50%) rotate(' + (i * 15) + 'deg) translateY(-' + radius + 'px)';
-                    timerTicks.appendChild(tick)
+                    timerTicks.appendChild(tick);
                 }
             }
 
@@ -956,7 +975,7 @@
                 var cy = rect.top + rect.height / 2;
                 var angle = Math.atan2(event.clientY - cy, event.clientX - cx) * 180 / Math.PI + 90;
                 if (angle < 0) angle += 360;
-                return angle / 360 * 120
+                return angle / 360 * 120;
             }
 
             function enableDial() {
@@ -965,51 +984,64 @@
                     initAudio();
                     dragging = true;
                     timerRing.setPointerCapture(event.pointerId);
-                    setTimerMinutes(dialMinutesFromEvent(event))
+                    setTimerMinutes(dialMinutesFromEvent(event));
                 });
                 timerRing.addEventListener('pointermove', function(event) {
                     if (!dragging) return;
-                    setTimerMinutes(dialMinutesFromEvent(event))
+                    setTimerMinutes(dialMinutesFromEvent(event));
                 });
                 timerRing.addEventListener('pointerup', function(event) {
                     dragging = false;
-                    try {
-                        timerRing.releasePointerCapture(event.pointerId)
-                    } catch (e) {}
+                    try { timerRing.releasePointerCapture(event.pointerId); } catch (e) {}
                 });
-                timerRing.addEventListener('pointercancel', function() {
-                    dragging = false
-                })
+                timerRing.addEventListener('pointercancel', function() { dragging = false; });
             }
 
             function render() {
                 stats.innerHTML = availableTasks().length + ' tasks<br>' + completedTasks().length + ' done' + (parkedTasks().length ? '<br>' + parkedTasks().length + ' parked' : '');
                 main.innerHTML = '';
+
+                if (!hasLoaded) {
+                    var loading = document.createElement('section');
+                    loading.className = 'focus-card empty';
+                    var text = document.createElement('strong');
+                    text.textContent = 'SYNCING';
+                    loading.appendChild(text);
+                    main.appendChild(loading);
+                    return;
+                }
+
                 var task = currentTask();
                 var completedToday = completedTasks().filter(function(item) {
-                    return item.completedAt && new Date(item.completedAt).toDateString() === new Date().toDateString()
+                    return item.completedAt && new Date(item.completedAt).toDateString() === new Date().toDateString();
                 });
+
                 if (!task) {
                     renderEmpty();
                     renderQueue();
                     renderCalendar();
-                    return
+                    return;
                 }
+
                 var parts = splitTaskText(task.note || task.title);
                 var card = document.createElement('section');
                 card.className = 'focus-card';
                 card.id = 'focusCard';
+
                 var top = document.createElement('div');
                 var label = document.createElement('div');
                 label.className = 'muted';
                 var hour = new Date().getHours();
                 label.textContent = hour < 12 ? 'GOOD MORNING' : hour < 18 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
+
                 var title = document.createElement('div');
                 title.className = 'task-title';
                 title.textContent = parts.heading;
+
                 var body = document.createElement('div');
                 body.className = parts.body ? 'task-body' : 'note';
                 body.textContent = parts.body || 'Stay with this one thing.';
+
                 var pills = document.createElement('div');
                 pills.className = 'pills';
                 addPill(pills, task.area || 'WORK');
@@ -1017,30 +1049,27 @@
                 addPill(pills, 'ONE TASK ONLY');
                 addPill(pills, String(task.timer || 30) + ' MIN');
                 if (task.date) addPill(pills, task.date);
+
                 top.appendChild(label);
                 top.appendChild(title);
                 top.appendChild(pills);
-                var hint = document.createElement('div');
-                hint.className = 'muted';
-                hint.textContent = 'Swipe left or right to park task';
+
                 var actions = document.createElement('div');
                 actions.className = 'actions';
                 actions.appendChild(makeButton('Complete Task', 'button', function() {
-                    task.done = true;
-                    task.parked = false;
-                    task.completedAt = Date.now();
-                    save()
+                    updateTask(task, { done: true, parked: false, completedAt: Date.now() });
                 }));
                 actions.appendChild(makeButton('Not Now', 'button secondary', function() {
-                    task.parked = true;
-                    save()
+                    updateTask(task, { parked: true });
                 }));
                 actions.appendChild(makeButton('Timer', 'button secondary', function() {
-                    openTimer(task)
+                    openTimer(task);
                 }));
+
                 card.appendChild(top);
                 card.appendChild(body);
                 card.appendChild(actions);
+
                 if (completedToday.length) {
                     var completedBlock = document.createElement('div');
                     completedBlock.className = 'completed-block';
@@ -1053,16 +1082,31 @@
                         var p = splitTaskText(item.note || item.title);
                         var line = document.createElement('div');
                         line.textContent = '• ' + p.heading;
-                        completedList.appendChild(line)
+                        completedList.appendChild(line);
                     });
                     completedBlock.appendChild(completedLabel);
                     completedBlock.appendChild(completedList);
-                    card.appendChild(completedBlock)
+                    card.appendChild(completedBlock);
                 }
+
                 main.appendChild(card);
                 attachSwipe(task);
                 renderQueue();
-                renderCalendar()
+                renderCalendar();
+            }
+
+            function renderError(message) {
+                main.innerHTML = '';
+                var card = document.createElement('section');
+                card.className = 'focus-card empty';
+                var title = document.createElement('strong');
+                title.textContent = 'SYNC ERROR';
+                var note = document.createElement('div');
+                note.className = 'note';
+                note.textContent = message;
+                card.appendChild(title);
+                card.appendChild(note);
+                main.appendChild(card);
             }
 
             function renderEmpty() {
@@ -1078,22 +1122,21 @@
                 wrap.appendChild(title);
                 wrap.appendChild(note);
                 card.appendChild(wrap);
+
                 if (hasParked) {
                     var actions = document.createElement('div');
                     actions.className = 'actions';
                     actions.style.width = '100%';
                     actions.appendChild(makeButton('15 Min Break', 'button', function() {
-                        startTimer('15 minute break', 15)
+                        startTimer('15 minute break', 15);
                     }));
                     actions.appendChild(makeButton('Restore Tasks', 'button secondary', function() {
-                        tasks.forEach(function(item) {
-                            if (!item.done) item.parked = false
-                        });
-                        save()
+                        parkedTasks().forEach(function(item) { updateTask(item, { parked: false }); });
                     }));
-                    card.appendChild(actions)
+                    card.appendChild(actions);
                 }
-                main.appendChild(card)
+
+                main.appendChild(card);
             }
 
             function renderQueue() {
@@ -1103,8 +1146,9 @@
                     empty.className = 'small';
                     empty.textContent = 'No tasks yet.';
                     queueList.appendChild(empty);
-                    return
+                    return;
                 }
+
                 tasks.forEach(function(task) {
                     var item = document.createElement('div');
                     item.className = 'item';
@@ -1117,29 +1161,28 @@
                     item.appendChild(span);
                     item.onclick = function() {
                         if (!task.done) {
-                            task.parked = false;
-                            save();
-                            queueDialog.close()
+                            updateTask(task, { parked: false });
+                            queueDialog.close();
                         }
                     };
-                    queueList.appendChild(item)
-                })
+                    queueList.appendChild(item);
+                });
             }
 
             function renderCalendar() {
                 calendarList.innerHTML = '';
-                var dated = tasks.filter(function(task) {
-                    return task.date
-                }).sort(function(a, b) {
-                    return String(a.date).localeCompare(String(b.date))
+                var dated = tasks.filter(function(task) { return task.date; }).sort(function(a, b) {
+                    return String(a.date).localeCompare(String(b.date));
                 });
+
                 if (!dated.length) {
                     var empty = document.createElement('div');
                     empty.className = 'small';
                     empty.textContent = 'No dated tasks yet.';
                     calendarList.appendChild(empty);
-                    return
+                    return;
                 }
+
                 dated.forEach(function(task) {
                     var item = document.createElement('div');
                     item.className = 'item';
@@ -1152,13 +1195,12 @@
                     item.appendChild(span);
                     item.onclick = function() {
                         if (!task.done) {
-                            task.parked = false;
-                            save();
-                            calendarDialog.close()
+                            updateTask(task, { parked: false });
+                            calendarDialog.close();
                         }
                     };
-                    calendarList.appendChild(item)
-                })
+                    calendarList.appendChild(item);
+                });
             }
 
             function attachSwipe(task) {
@@ -1166,22 +1208,19 @@
                 if (!card) return;
                 var startX = 0;
                 var startY = 0;
+
                 card.addEventListener('touchstart', function(event) {
                     startX = event.touches[0].clientX;
-                    startY = event.touches[0].clientY
-                }, {
-                    passive: true
-                });
+                    startY = event.touches[0].clientY;
+                }, { passive: true });
+
                 card.addEventListener('touchend', function(event) {
                     var dx = event.changedTouches[0].clientX - startX;
                     var dy = event.changedTouches[0].clientY - startY;
                     if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-                        task.parked = true;
-                        save()
+                        updateTask(task, { parked: true });
                     }
-                }, {
-                    passive: true
-                })
+                }, { passive: true });
             }
 
             function openCapture() {
@@ -1191,8 +1230,8 @@
                 taskDialog.showModal();
                 setTimeout(function() {
                     taskInput.focus();
-                    startRecording()
-                }, 250)
+                    startRecording();
+                }, 250);
             }
 
             function startRecording() {
@@ -1200,8 +1239,9 @@
                 if (!SpeechRecognition) {
                     voiceStatus.textContent = 'Voice unavailable. Use your keyboard mic or type manually.';
                     recordBtn.textContent = 'Voice unavailable';
-                    return
+                    return;
                 }
+
                 if (!recognition) {
                     recognition = new SpeechRecognition();
                     recognition.continuous = true;
@@ -1209,75 +1249,64 @@
                     recognition.lang = 'en-AU';
                     recognition.onresult = function(event) {
                         var text = '';
-                        for (var i = event.resultIndex; i < event.results.length; i++) {
-                            text += event.results[i][0].transcript
-                        }
-                        taskInput.value = text
+                        for (var i = event.resultIndex; i < event.results.length; i++) text += event.results[i][0].transcript;
+                        taskInput.value = text;
                     };
-                    recognition.onend = function() {
-                        recordBtn.textContent = 'Start voice again'
-                    }
+                    recognition.onend = function() { recordBtn.textContent = 'Start voice again'; };
                 }
+
                 try {
                     recognition.start();
                     recordBtn.textContent = 'Listening... tap to restart';
-                    voiceStatus.textContent = 'Listening now. You can also use the keyboard mic.'
+                    voiceStatus.textContent = 'Listening now. You can also use the keyboard mic.';
                 } catch (error) {
-                    recordBtn.textContent = 'Start voice again'
+                    recordBtn.textContent = 'Start voice again';
                 }
             }
 
             function parkCurrentTask() {
                 var task = currentTask();
                 if (!task) return;
-                task.parked = true;
-                save()
+                updateTask(task, { parked: true });
             }
+
             document.addEventListener('keydown', function(event) {
                 if (taskDialog.open || queueDialog.open || calendarDialog.open || timerDialog.open) return;
                 if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                     event.preventDefault();
-                    parkCurrentTask()
+                    parkCurrentTask();
                 }
             });
+
             document.getElementById('voiceBtn').onclick = openCapture;
-            document.getElementById('queueBtn').onclick = function() {
-                renderQueue();
-                queueDialog.showModal()
-            };
-            document.getElementById('calendarBtn').onclick = function() {
-                renderCalendar();
-                calendarDialog.showModal()
-            };
-            document.getElementById('closeTimerBtn').onclick = function() {
-                timerDialog.close()
-            };
+            document.getElementById('queueBtn').onclick = function() { renderQueue(); queueDialog.showModal(); };
+            document.getElementById('calendarBtn').onclick = function() { renderCalendar(); calendarDialog.showModal(); };
+            document.getElementById('closeTimerBtn').onclick = function() { timerDialog.close(); };
+
             document.getElementById('startTimerBtn').onclick = function() {
                 if (selectedTask) {
-                    selectedTask.timer = selectedMinutes;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+                    updateTask(selectedTask, { timer: selectedMinutes });
                     startTimer(selectedTask.title, selectedMinutes);
                     timerDialog.close();
-                    render()
                 }
             };
+
             document.querySelectorAll('[data-close]').forEach(function(button) {
                 button.onclick = function() {
-                    document.getElementById(button.getAttribute('data-close')).close()
-                }
+                    document.getElementById(button.getAttribute('data-close')).close();
+                };
             });
+
             recordBtn.onclick = function() {
-                try {
-                    if (recognition) recognition.stop()
-                } catch (error) {}
-                setTimeout(startRecording, 150)
+                try { if (recognition) recognition.stop(); } catch (error) {}
+                setTimeout(startRecording, 150);
             };
 
             function saveTaskFromInput() {
                 var value = taskInput.value.trim();
                 if (!value) return;
                 var parts = splitTaskText(value);
-                tasks.push({
+                createTask({
                     id: Date.now(),
                     title: parts.heading,
                     note: value,
@@ -1286,49 +1315,48 @@
                     timer: 30,
                     done: false,
                     parked: false,
-                    createdAt: Date.now()
+                    createdAt: Date.now(),
+                    completedAt: null
                 });
-                try {
-                    if (recognition) recognition.stop()
-                } catch (error) {}
+                try { if (recognition) recognition.stop(); } catch (error) {}
                 taskDialog.close();
-                save()
             }
+
             document.getElementById('saveBtn').onclick = saveTaskFromInput;
+
             taskInput.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter' && !event.shiftKey) {
                     event.preventDefault();
-                    saveTaskFromInput()
+                    saveTaskFromInput();
                 }
             });
+
             document.getElementById('resetBtn').onclick = function() {
                 if (!confirm('Reset all tasks?')) return;
-                tasks = [];
-                localStorage.removeItem(STORAGE_KEY);
-                render();
-                queueDialog.close()
+                deleteAllTasks();
+                queueDialog.close();
             };
+
             document.getElementById('exportBtn').onclick = function() {
                 var lines = [];
                 tasks.forEach(function(task) {
                     lines.push((task.done ? '[x] ' : '[ ] ') + task.title);
                     lines.push((task.area || 'WORK') + (task.date ? ' / ' + task.date : ''));
-                    lines.push('')
+                    lines.push('');
                 });
                 var text = lines.join(NEW_LINE);
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text || 'No tasks')
-                }
-                alert(text || 'No tasks')
+                if (navigator.clipboard) navigator.clipboard.writeText(text || 'No tasks');
+                alert(text || 'No tasks');
             };
 
             makeTicks();
             enableDial();
-            load();
+            subscribeToTasks();
             if (timerEnd > Date.now()) startTimerLoop();
             render();
         })();
     </script>
+
 </body>
 
 </html>

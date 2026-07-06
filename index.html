@@ -180,7 +180,7 @@
     .app.rail-hidden .stack-rail{display:none}
     .rail-toggle-show{display:none;position:fixed;right:12px;bottom:12px;z-index:80;border:1px solid var(--colour-line);background:var(--colour-accent);color:var(--colour-accent-text);padding:12px 14px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;font-size:11px}
     .app.rail-hidden + .rail-toggle-show{display:block}
-    footer{grid-column:1;grid-row:3;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:end}
+    footer{grid-column:1;grid-row:3;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end}
     .footer-button,.nav-btn{border:1px solid var(--colour-line);background:var(--colour-panel);border-radius:var(--radius);padding:14px 10px;color:var(--colour-body);min-height:48px}
     .footer-button.primary{background:var(--colour-accent);color:var(--colour-accent-text);border-color:var(--colour-accent);font-weight:700}
     .thing-card{min-height:0;border:1px solid var(--colour-line);background:var(--colour-panel);box-shadow:var(--shadow-heavy);display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden}
@@ -351,35 +351,6 @@
       .thing-actions{flex:0 0 auto;position:sticky;bottom:0;z-index:20;background:var(--colour-panel);border-top:1px solid var(--colour-line);padding:8px}
     }
 
-
-    /* Mobile side tab for hidden stack drawer */
-    @media(max-width:820px){
-      .rail-toggle-show{
-        right:0;
-        left:auto;
-        top:50%;
-        bottom:auto;
-        transform:translateY(-50%);
-        width:38px;
-        height:118px;
-        padding:8px 4px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        writing-mode:vertical-rl;
-        text-orientation:mixed;
-        border:1px solid var(--colour-line);
-        border-right:0;
-        background:var(--stack-panel-background);
-        color:var(--colour-body);
-        font-family:var(--font-mono);
-        font-size:10px;
-        letter-spacing:.12em;
-        z-index:120;
-      }
-      .app:not(.rail-hidden)+.rail-toggle-show{display:none}
-    }
-
   </style>
 </head>
 <body>
@@ -397,10 +368,10 @@
   <div class="app" id="appShell">
     <header><div class="logo brand-logo">ONE<br>MORE<br>THING</div><div class="status small" id="status">SYNCING</div></header>
     <main id="main"></main>
-    <aside class="stack-rail"><div class="stack-head"><div><div class="small">Stack</div><div class="stack-title" id="stackTitle">All</div></div><div style="display:grid;gap:6px;justify-items:end"><div class="small" id="stackCount">0 Things</div><button class="chip" id="quickAddStackBtn" type="button">+ Stack</button><button class="chip" id="hideRailBtn" type="button">Hide</button></div></div><div class="stack-list" id="stackList"></div><div class="stack-cats" id="categoryChips"></div></aside>
-    <footer><button class="footer-button" id="libraryBtn">Library</button><button class="footer-button primary" id="addBtn">Add Thing</button><button class="footer-button" id="calendarBtn">Calendar</button></footer>
+    <aside class="stack-rail"><div class="stack-head"><div><div class="small">Stack</div><div class="stack-title" id="stackTitle">All</div></div><div style="display:grid;gap:6px;justify-items:end"><div class="small" id="stackCount">0 Things</div><button class="chip" id="hideRailBtn" type="button">Hide</button></div></div><div class="stack-list" id="stackList"></div><div class="stack-cats" id="categoryChips"></div></aside>
+    <footer><button class="footer-button" id="libraryBtn">Library</button><button class="footer-button primary" id="addBtn">Add Thing</button><button class="footer-button" id="calendarBtn">Calendar</button><button class="footer-button" id="categoriesBtn">Stacks</button></footer>
   </div>
-  <button class="rail-toggle-show" id="showRailBtn" type="button">STACKS</button>
+  <button class="rail-toggle-show" id="showRailBtn" type="button">Show Stack</button>
   <dialog id="editorDialog"><form method="dialog" class="modal" id="editorForm"><div class="modal-head"><h2 class="modal-title" id="editorTitle">Add Thing</h2><button class="icon-button" type="button" data-close="editorDialog">×</button></div><label><div class="field-label">Header</div><textarea id="thingText" placeholder="Thing heading"></textarea></label><div class="form-grid"><label><div class="field-label">Stack</div><select id="thingCategory"></select></label><label><div class="field-label">Date</div><input id="thingDate" type="date"></label></div><div class="block-editor-head"><div class="field-label">Body Blocks</div><div class="block-add-row"><button class="button secondary" id="addTextBlockBtn" type="button">+ Text</button><button class="button secondary" id="addImageBlockBtn" type="button">+ Image</button><button class="button secondary" id="addResourceBlockBtn" type="button">+ Resource</button></div></div><div class="block-editor-list" id="blockEditorList"></div><div class="form-grid"><button class="button" id="saveThingBtn" type="button">Save Thing</button><button class="button secondary" id="hideThingBtn" type="button">Hide Thing</button></div><button class="button danger" id="deleteThingBtn" type="button">Delete Thing</button></form></dialog>
   <dialog id="libraryDialog"><div class="modal"><div class="modal-head"><h2 class="modal-title">Library</h2><button class="icon-button" type="button" data-close="libraryDialog">×</button></div><div class="list" id="libraryList"></div><button class="button danger" id="deleteArchivedBtn" type="button">Delete Done / Archived</button></div></dialog>
   <dialog id="categoriesDialog"><div class="modal"><div class="modal-head"><h2 class="modal-title">Stacks</h2><button class="icon-button" type="button" data-close="categoriesDialog">×</button></div><div class="form-grid"><input id="newCategoryInput" placeholder="New stack name"><button class="button" id="addCategoryBtn" type="button">Add</button></div><div class="list" id="categoriesList"></div></div></dialog>
@@ -673,6 +644,20 @@
       };
       categoryChips.appendChild(b);
     });
+    const actions=document.createElement('div');
+    actions.className='stack-manager-actions';
+    const add=document.createElement('button');
+    add.className='chip';
+    add.type='button';
+    add.textContent='+ New Stack';
+    add.onclick=function(){quickAddStack()};
+    const manage=document.createElement('button');
+    manage.className='chip';
+    manage.type='button';
+    manage.textContent='Manage Stacks';
+    manage.onclick=function(){renderCategoriesUI();categoriesDialog.showModal()};
+    actions.append(add,manage);
+    categoryChips.appendChild(actions);
     stackTitle.textContent=activeCategory;
     stackCount.textContent=visibleThings().length+' Active';
   }
@@ -746,7 +731,7 @@
   passwordBtn.onclick=checkPassword;
   passwordInput.addEventListener('keydown',function(event){if(event.key==='Enter'){event.preventDefault();checkPassword()}});
   if(sessionStorage.getItem('omtUnlocked')==='yes'){unlockApp()}else{setTimeout(()=>passwordInput.focus(),250)}
-  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());$('renameStackBtn').onclick=renameActiveStack;$('duplicateStackBtn').onclick=duplicateActiveStack;$('deleteStackBtn').onclick=deleteActiveStack;const hideRailBtn=$('hideRailBtn');const showRailBtn=$('showRailBtn');const quickAddStackBtn=$('quickAddStackBtn');if(window.matchMedia('(max-width:820px)').matches){appShell.classList.add('rail-hidden')}if(hideRailBtn)hideRailBtn.onclick=function(){appShell.classList.add('rail-hidden')};if(showRailBtn)showRailBtn.onclick=function(){appShell.classList.remove('rail-hidden')};if(quickAddStackBtn)quickAddStackBtn.onclick=function(){quickAddStack()};$('addBtn').onclick=()=>openEditor();$('libraryBtn').onclick=()=>{renderLibrary();libraryDialog.showModal()};$('calendarBtn').onclick=()=>{renderCalendar();calendarDialog.showModal()};const categoriesNav=$('categoriesBtn');if(categoriesNav)categoriesNav.onclick=()=>categoriesDialog.showModal();$('saveThingBtn').onclick=saveEditor;$('addTextBlockBtn').onclick=function(){addEditorBlock('text')};$('addImageBlockBtn').onclick=function(){addEditorBlock('image')};$('addResourceBlockBtn').onclick=function(){addEditorBlock('resource')};document.getElementById('editorForm').addEventListener('submit',e=>{e.preventDefault();saveEditor()});thingText.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();saveEditor()}});$('hideThingBtn').onclick=async()=>{if(editing){await updateThing(editing,{hidden:!editing.hidden});editorDialog.close()}};$('deleteThingBtn').onclick=async()=>{if(editing&&confirm('Delete this thing?')){await deleteThing(editing);editorDialog.close()}};$('addCategoryBtn').onclick=async()=>{const name=$('newCategoryInput').value.trim().toUpperCase();if(!name)return;try{await setDoc(doc(db,'categories',name),{name,createdAt:Date.now()},{merge:true});activeCategory=name;$('newCategoryInput').value=''}catch(error){console.error(error);alert('Could not add stack. Check your Firestore rules allow writes to categories.')}};$('prevMonthBtn').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()-1);renderCalendar()};$('nextMonthBtn').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()+1);renderCalendar()};const deleteArchivedBtn=$('deleteArchivedBtn');if(deleteArchivedBtn)deleteArchivedBtn.onclick=async()=>{const archived=things.filter(t=>t.done);if(!archived.length){alert('No done / archived Things to delete.');return}if(!confirm('Delete '+archived.length+' done / archived Things?'))return;try{await Promise.all(archived.map(t=>deleteThing(t)));renderLibrary()}catch(error){console.error(error);alert('Could not delete archived Things. Check Firestore rules.')}};$('closeTimerBtn').onclick=()=>timerDialog.close();$('startTimerBtn').onclick=()=>{if(selectedThing){updateThing(selectedThing,{timer:selectedMinutes});startTimer(selectedThing.title,selectedMinutes)}};document.addEventListener('keydown',e=>{if(e.key==='Enter'&&editorDialog.open&&!e.shiftKey){e.preventDefault();saveEditor()} if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!editorDialog.open&&!timerDialog.open&&!calendarDialog.open&&!libraryDialog.open){if(currentThing()){e.preventDefault();moveThing(e.key==='ArrowRight'?1:-1)}}});
+  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());$('renameStackBtn').onclick=renameActiveStack;$('duplicateStackBtn').onclick=duplicateActiveStack;$('deleteStackBtn').onclick=deleteActiveStack;const hideRailBtn=$('hideRailBtn');const showRailBtn=$('showRailBtn');if(window.matchMedia('(max-width:820px)').matches){appShell.classList.add('rail-hidden')}if(hideRailBtn)hideRailBtn.onclick=function(){appShell.classList.add('rail-hidden')};if(showRailBtn)showRailBtn.onclick=function(){appShell.classList.remove('rail-hidden')};$('addBtn').onclick=()=>openEditor();$('libraryBtn').onclick=()=>{renderLibrary();libraryDialog.showModal()};$('calendarBtn').onclick=()=>{renderCalendar();calendarDialog.showModal()};$('categoriesBtn').onclick=()=>categoriesDialog.showModal();$('saveThingBtn').onclick=saveEditor;$('addTextBlockBtn').onclick=function(){addEditorBlock('text')};$('addImageBlockBtn').onclick=function(){addEditorBlock('image')};$('addResourceBlockBtn').onclick=function(){addEditorBlock('resource')};document.getElementById('editorForm').addEventListener('submit',e=>{e.preventDefault();saveEditor()});thingText.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();saveEditor()}});$('hideThingBtn').onclick=async()=>{if(editing){await updateThing(editing,{hidden:!editing.hidden});editorDialog.close()}};$('deleteThingBtn').onclick=async()=>{if(editing&&confirm('Delete this thing?')){await deleteThing(editing);editorDialog.close()}};$('addCategoryBtn').onclick=async()=>{const name=$('newCategoryInput').value.trim().toUpperCase();if(!name)return;try{await setDoc(doc(db,'categories',name),{name,createdAt:Date.now()},{merge:true});activeCategory=name;$('newCategoryInput').value=''}catch(error){console.error(error);alert('Could not add stack. Check your Firestore rules allow writes to categories.')}};$('prevMonthBtn').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()-1);renderCalendar()};$('nextMonthBtn').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()+1);renderCalendar()};const deleteArchivedBtn=$('deleteArchivedBtn');if(deleteArchivedBtn)deleteArchivedBtn.onclick=async()=>{const archived=things.filter(t=>t.done);if(!archived.length){alert('No done / archived Things to delete.');return}if(!confirm('Delete '+archived.length+' done / archived Things?'))return;try{await Promise.all(archived.map(t=>deleteThing(t)));renderLibrary()}catch(error){console.error(error);alert('Could not delete archived Things. Check Firestore rules.')}};$('closeTimerBtn').onclick=()=>timerDialog.close();$('startTimerBtn').onclick=()=>{if(selectedThing){updateThing(selectedThing,{timer:selectedMinutes});startTimer(selectedThing.title,selectedMinutes)}};document.addEventListener('keydown',e=>{if(e.key==='Enter'&&editorDialog.open&&!e.shiftKey){e.preventDefault();saveEditor()} if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!editorDialog.open&&!timerDialog.open&&!calendarDialog.open&&!libraryDialog.open){if(currentThing()){e.preventDefault();moveThing(e.key==='ArrowRight'?1:-1)}}});
   makeTicks();enableDial();
 </script>
 </body>

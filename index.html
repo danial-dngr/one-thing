@@ -201,6 +201,18 @@
     .body-link span{font-family:var(--font-mono);color:var(--colour-meta);font-size:11px;text-transform:uppercase;letter-spacing:.08em;word-break:break-all}
     .body-text-block{font-size:var(--type-body);line-height:1.35;max-width:900px;white-space:pre-wrap;color:var(--colour-body);margin:10px 0 22px}
 
+    .block-editor-head{display:grid;gap:10px;border-top:1px solid var(--colour-line);padding-top:12px}
+    .block-add-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .block-add-row .button{min-height:42px;padding:10px;font-size:11px}
+    .block-editor-list{display:grid;gap:10px}
+    .editor-block{border:1px solid var(--colour-line);background:var(--colour-soft);padding:12px;display:grid;gap:10px}
+    .editor-block-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .editor-block-type{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--colour-meta)}
+    .editor-block-controls{display:flex;gap:6px}
+    .editor-block-controls button{border:1px solid var(--colour-line);background:var(--colour-page);color:var(--colour-body);min-width:34px;min-height:32px;font-family:var(--font-mono);font-size:11px}
+    .editor-block textarea{min-height:110px}
+    .editor-block input{min-height:44px}
+
     .thing-actions{display:grid;grid-template-columns:.75fr 1.1fr .75fr .75fr .75fr;gap:10px;padding:0 clamp(24px,4vw,54px) clamp(22px,3vw,36px);background:var(--colour-panel);z-index:5}
     .button{border:1px solid var(--colour-accent);background:var(--colour-accent);color:var(--colour-accent-text);border-radius:var(--radius);padding:16px 18px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;min-height:54px;font-size:14px}
     .button.secondary{background:var(--colour-page);color:var(--colour-body);border-color:var(--colour-line)}
@@ -316,6 +328,8 @@
       .thing-body,
       .body-text-block{font-size:var(--type-body-mobile)}
       .thing-actions .button{min-height:var(--mobile-button-height);font-size:var(--type-button-mobile)}
+      .block-add-row{grid-template-columns:1fr}
+      .block-add-row .button{min-height:38px}
     }
 
     /* Mobile scroll + sticky controls fix */
@@ -347,10 +361,7 @@
     <footer><button class="footer-button" id="libraryBtn">Library</button><button class="footer-button primary" id="addBtn">Add Thing</button><button class="footer-button" id="calendarBtn">Calendar</button><button class="footer-button" id="categoriesBtn">Stacks</button></footer>
   </div>
   <button class="rail-toggle-show" id="showRailBtn" type="button">Show Stack</button>
-  <dialog id="editorDialog"><form method="dialog" class="modal" id="editorForm"><div class="modal-head"><h2 class="modal-title" id="editorTitle">Add Thing</h2><button class="icon-button" type="button" data-close="editorDialog">×</button></div><label><div class="field-label">Thing</div><textarea id="thingText" placeholder="First sentence becomes the header. Add notes and paste as many links as you need below."></textarea></label><div class="form-grid"><label><div class="field-label">Stack</div><select id="thingCategory"></select></label><label><div class="field-label">Date</div><input id="thingDate" type="date"></label></div><label><div class="field-label">Image URL</div><input id="thingImage" type="url" placeholder="https://..."></label><label><div class="field-label">Resources / Links</div><textarea id="thingLinks" placeholder="Paste one link per line.
-https://example.com
-https://miro.com/...
-https://figma.com/..."></textarea></label><div class="form-grid"><button class="button" id="saveThingBtn" type="button">Save Thing</button><button class="button secondary" id="hideThingBtn" type="button">Hide Thing</button></div><button class="button danger" id="deleteThingBtn" type="button">Delete Thing</button></form></dialog>
+  <dialog id="editorDialog"><form method="dialog" class="modal" id="editorForm"><div class="modal-head"><h2 class="modal-title" id="editorTitle">Add Thing</h2><button class="icon-button" type="button" data-close="editorDialog">×</button></div><label><div class="field-label">Header</div><textarea id="thingText" placeholder="Thing heading"></textarea></label><div class="form-grid"><label><div class="field-label">Stack</div><select id="thingCategory"></select></label><label><div class="field-label">Date</div><input id="thingDate" type="date"></label></div><div class="block-editor-head"><div class="field-label">Body Blocks</div><div class="block-add-row"><button class="button secondary" id="addTextBlockBtn" type="button">+ Text</button><button class="button secondary" id="addImageBlockBtn" type="button">+ Image</button><button class="button secondary" id="addResourceBlockBtn" type="button">+ Resource</button></div></div><div class="block-editor-list" id="blockEditorList"></div><div class="form-grid"><button class="button" id="saveThingBtn" type="button">Save Thing</button><button class="button secondary" id="hideThingBtn" type="button">Hide Thing</button></div><button class="button danger" id="deleteThingBtn" type="button">Delete Thing</button></form></dialog>
   <dialog id="libraryDialog"><div class="modal"><div class="modal-head"><h2 class="modal-title">Library</h2><button class="icon-button" type="button" data-close="libraryDialog">×</button></div><div class="list" id="libraryList"></div><button class="button danger" id="deleteArchivedBtn" type="button">Delete Done / Archived</button></div></dialog>
   <dialog id="categoriesDialog"><div class="modal"><div class="modal-head"><h2 class="modal-title">Stacks</h2><button class="icon-button" type="button" data-close="categoriesDialog">×</button></div><div class="form-grid"><input id="newCategoryInput" placeholder="New stack name"><button class="button" id="addCategoryBtn" type="button">Add</button></div><div class="list" id="categoriesList"></div></div></dialog>
   <dialog id="calendarDialog"><div class="modal"><div class="modal-head"><h2 class="modal-title">Calendar</h2><button class="icon-button" type="button" data-close="calendarDialog">×</button></div><div class="calendar-top"><button class="nav-btn" id="prevMonthBtn">Prev</button><div class="stack-title" id="monthTitle"></div><button class="nav-btn" id="nextMonthBtn">Next</button></div><div class="stack-cats" id="calendarFilters"></div><div class="calendar-grid" id="calendarGrid"></div></div></dialog>
@@ -365,9 +376,10 @@ https://figma.com/..."></textarea></label><div class="form-grid"><button class="
   let things=[], categories=[], activeCategory='ADD306', editing=null, selectedThing=null, selectedMinutes=30, monthCursor=new Date(), timerEnd=Number(localStorage.getItem('omtTimerEnd')||0), timerTitle=localStorage.getItem('omtTimerTitle')||'', timerInterval=null, audioContext=null, lastTick=0;
   let stackCursor={}; try{stackCursor=JSON.parse(localStorage.getItem('omtStackCursor')||'{}')}catch(_){stackCursor={}}
   let applyingRemoteSession=false;
+  let editorBlocks=[];
   const $=id=>document.getElementById(id); const main=$('main'), status=$('status'), stackList=$('stackList'), categoryChips=$('categoryChips'), stackTitle=$('stackTitle'), stackCount=$('stackCount');
   const editorDialog=$('editorDialog'), libraryDialog=$('libraryDialog'), categoriesDialog=$('categoriesDialog'), calendarDialog=$('calendarDialog'), timerDialog=$('timerDialog');
-  const thingText=$('thingText'), thingCategory=$('thingCategory'), thingDate=$('thingDate'), thingImage=$('thingImage'), thingLinks=$('thingLinks');
+  const thingText=$('thingText'), thingCategory=$('thingCategory'), thingDate=$('thingDate'), blockEditorList=$('blockEditorList');
   const timerRing=$('timerRing'), timerTicks=$('timerTicks'), timerValue=$('timerValue'), timerEndText=$('timerEndText'), timerLock=$('timerLock'), lockTime=$('lockTime'), lockTask=$('lockTask');
   const appShell=$('appShell'), passwordGate=$('passwordGate'), passwordInput=$('passwordInput'), passwordBtn=$('passwordBtn'), passwordError=$('passwordError'), passwordStatus=$('passwordStatus');
   let syncStarted=false;
@@ -399,9 +411,110 @@ https://figma.com/..."></textarea></label><div class="form-grid"><button class="
   function appendResourceLink(parent,url,label){const info=linkInfo(url);if(!info)return;const a=document.createElement('a');a.className='thing-link-preview';a.href=info.href;a.target='_blank';a.rel='noopener';a.innerHTML='<strong>'+ (label||'Open article / resource') +'</strong><span>'+info.host+'</span>';parent.appendChild(a)}
   function appendBodyWithLinks(parent,text){const source=String(text||'').trim();if(!source){const fallback=document.createElement('div');fallback.className='body-text-block';fallback.textContent='Stay with this one thing.';parent.appendChild(fallback);return}const urlRegex=/(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9.-]+\.[a-z]{2,}(?:\/[^\s]*)?)/ig;let last=0,match,buffer='';function flush(){if(buffer.trim()){const block=document.createElement('div');block.className='body-text-block';block.textContent=buffer.trim();parent.appendChild(block)}buffer=''}while((match=urlRegex.exec(source))!==null){buffer+=source.slice(last,match.index);flush();const clean=match[0].replace(/[),.;!?]+$/,'');const info=linkInfo(clean);if(info){const a=document.createElement('a');a.className='body-link';a.href=info.href;a.target='_blank';a.rel='noopener';a.innerHTML='<strong>Open resource</strong><span>'+info.host+'</span>';parent.appendChild(a)}else{buffer+=match[0]}last=match.index+match[0].length}buffer+=source.slice(last);flush()}
 
+
+  function getThingTitle(t){
+    if(t && t.title) return String(t.title).trim() || 'Untitled Thing';
+    return splitText(t && (t.note||'')).heading;
+  }
+  function getLegacyBlocks(t){
+    var blocks=[];
+    var parts=splitText(t.note||t.title||'');
+    if(t.image) blocks.push({type:'image',src:t.image});
+    normaliseLinksFromThing(t).forEach(function(url){blocks.push({type:'resource',url:url})});
+    if(parts.body) blocks.push({type:'text',text:parts.body});
+    if(!blocks.length) blocks.push({type:'text',text:'Stay with this one thing.'});
+    return blocks;
+  }
+  function getThingBlocks(t){
+    if(Array.isArray(t.blocks) && t.blocks.length){
+      return t.blocks.map(function(block){
+        if(!block || !block.type) return null;
+        if(block.type==='image') return {type:'image',src:block.src||block.url||''};
+        if(block.type==='resource') return {type:'resource',url:block.url||''};
+        return {type:'text',text:block.text||block.content||''};
+      }).filter(Boolean);
+    }
+    return getLegacyBlocks(t);
+  }
+  function renderThingBlocks(parent,t){
+    getThingBlocks(t).forEach(function(block){
+      if(block.type==='image'){
+        if(!block.src) return;
+        const img=document.createElement('img');
+        img.className='thing-image';
+        img.src=block.src;
+        img.alt='Thing image';
+        parent.appendChild(img);
+      }else if(block.type==='resource'){
+        appendResourceLink(parent,block.url);
+      }else{
+        appendBodyWithLinks(parent,block.text||'');
+      }
+    });
+  }
+  function blockLabel(type){
+    return type==='image'?'Image':type==='resource'?'Resource':'Text';
+  }
+  function renderBlockEditor(){
+    if(!blockEditorList)return;
+    blockEditorList.innerHTML='';
+    if(!editorBlocks.length){
+      editorBlocks=[{type:'text',text:''}];
+    }
+    editorBlocks.forEach(function(block,index){
+      const wrap=document.createElement('div');
+      wrap.className='editor-block';
+      const top=document.createElement('div');
+      top.className='editor-block-top';
+      top.innerHTML='<div class="editor-block-type">'+blockLabel(block.type)+' Block</div>';
+      const controls=document.createElement('div');
+      controls.className='editor-block-controls';
+      const up=document.createElement('button');up.type='button';up.textContent='↑';up.title='Move up';up.onclick=function(){moveEditorBlock(index,-1)};
+      const down=document.createElement('button');down.type='button';down.textContent='↓';down.title='Move down';down.onclick=function(){moveEditorBlock(index,1)};
+      const del=document.createElement('button');del.type='button';del.textContent='×';del.title='Delete';del.onclick=function(){deleteEditorBlock(index)};
+      controls.append(up,down,del);top.appendChild(controls);wrap.appendChild(top);
+      if(block.type==='image'){
+        const input=document.createElement('input');input.type='url';input.placeholder='Image URL';input.value=block.src||'';input.oninput=function(){editorBlocks[index].src=input.value};wrap.appendChild(input);
+      }else if(block.type==='resource'){
+        const input=document.createElement('input');input.type='url';input.placeholder='Resource URL';input.value=block.url||'';input.oninput=function(){editorBlocks[index].url=input.value};wrap.appendChild(input);
+      }else{
+        const textarea=document.createElement('textarea');textarea.placeholder='Text block';textarea.value=block.text||'';textarea.oninput=function(){editorBlocks[index].text=textarea.value};wrap.appendChild(textarea);
+      }
+      blockEditorList.appendChild(wrap);
+    });
+  }
+  function addEditorBlock(type){
+    if(type==='image') editorBlocks.push({type:'image',src:''});
+    else if(type==='resource') editorBlocks.push({type:'resource',url:''});
+    else editorBlocks.push({type:'text',text:''});
+    renderBlockEditor();
+  }
+  function moveEditorBlock(index,direction){
+    const next=index+direction;
+    if(next<0||next>=editorBlocks.length)return;
+    const temp=editorBlocks[index];editorBlocks[index]=editorBlocks[next];editorBlocks[next]=temp;
+    renderBlockEditor();
+  }
+  function deleteEditorBlock(index){
+    editorBlocks.splice(index,1);
+    if(!editorBlocks.length)editorBlocks=[{type:'text',text:''}];
+    renderBlockEditor();
+  }
+  function cleanEditorBlocks(){
+    return editorBlocks.map(function(block){
+      if(block.type==='image') return {type:'image',src:String(block.src||'').trim()};
+      if(block.type==='resource') return {type:'resource',url:(linkInfo(block.url||'')||{}).href||String(block.url||'').trim()};
+      return {type:'text',text:String(block.text||'').trim()};
+    }).filter(function(block){
+      if(block.type==='image')return !!block.src;
+      if(block.type==='resource')return !!block.url;
+      return !!block.text;
+    });
+  }
+
   function renderCategoryChips(){ensureActiveCategory();categoryChips.innerHTML='';allCats().forEach(c=>{const count=activeThingsInStack(c).length;const b=document.createElement('button');b.className='chip '+(activeCategory===c?'active':'');b.textContent=c+' '+count;b.onclick=()=>{activeCategory=c;syncSession();render();if(window.matchMedia('(max-width:820px)').matches){document.querySelector('.app').classList.add('rail-hidden')}};categoryChips.appendChild(b)});stackTitle.textContent=activeCategory;stackCount.textContent=visibleThings().length+' Active'}
-  function renderMain(){main.innerHTML='';const t=currentThing(); if(!t){const card=document.createElement('section');card.className='thing-card empty';card.innerHTML='<div><strong>NOTHING IN '+activeCategory+'</strong><div class="note">Add a Thing to this Stack, or open Library to view done, parked, hidden, and archived Things.</div></div>';main.appendChild(card);return} const parts=splitText(t.note||t.title);const card=document.createElement('section');card.className='thing-card';card.id='focusCard';const top=document.createElement('div');top.className='thing-top';top.innerHTML='<div class="small">'+greeting()+'</div><div class="thing-title"></div><div class="pills"></div>';top.querySelector('.thing-title').textContent=parts.heading;const pills=top.querySelector('.pills');[t.category||'WORK','NOW','ONE MORE THING',(t.timer||30)+' MIN'].forEach(p=>addPill(pills,p));if(t.date)addPill(pills,t.date);const scroll=document.createElement('div');scroll.className='thing-scroll';if(t.image){const img=document.createElement('img');img.className='thing-image';img.src=t.image;img.alt='Thing image';scroll.appendChild(img)}scroll.appendChild(top);normaliseLinksFromThing(t).forEach(function(url){appendResourceLink(scroll,url)});appendBodyWithLinks(scroll,parts.body||'Stay with this one thing.');const actions=document.createElement('div');actions.className='thing-actions';actions.appendChild(button('Previous','button secondary',()=>moveThing(-1)));actions.appendChild(button('Done','button',async()=>{t.done=true;t.parked=false;t.completedAt=Date.now();render();await updateThing(t,{done:true,completedAt:t.completedAt,parked:false})}));actions.appendChild(button('Next','button secondary',()=>moveThing(1)));actions.appendChild(button('Timer','button secondary',()=>openTimer(t)));actions.appendChild(button('Edit','button secondary',()=>openEditor(t)));card.append(scroll,actions);main.appendChild(card);attachSwipe(t)}
-  function renderStack(){stackList.innerHTML='';var selected=currentIndex();visibleThings().forEach((t,i)=>{const p=splitText(t.note||t.title);const item=document.createElement('div');item.className='stack-item '+(i===selected?'active':'');item.dataset.id=t.firebaseId||'';item.innerHTML='<div class="stack-drag-handle" title="Drag to reorder">≡</div><div><div class="stack-name"></div><div class="small"></div></div>';item.querySelector('.stack-name').textContent=p.heading;item.querySelector('.small').textContent=activeCategory+' / '+(t.timer||30)+' MIN';item.onclick=function(e){if(item.dataset.dragged==='yes'){item.dataset.dragged='';return}stackCursor[activeCategory]=i;saveCursor();render()};stackList.appendChild(item)});enableStackDrag()}
+  function renderMain(){main.innerHTML='';const t=currentThing(); if(!t){const card=document.createElement('section');card.className='thing-card empty';card.innerHTML='<div><strong>NOTHING IN '+activeCategory+'</strong><div class="note">Add a Thing to this Stack, or open Library to view done, parked, hidden, and archived Things.</div></div>';main.appendChild(card);return} const card=document.createElement('section');card.className='thing-card';card.id='focusCard';const top=document.createElement('div');top.className='thing-top';top.innerHTML='<div class="small">'+greeting()+'</div><div class="thing-title"></div><div class="pills"></div>';top.querySelector('.thing-title').textContent=getThingTitle(t);const pills=top.querySelector('.pills');[thingStack(t)||'WORK','NOW','ONE MORE THING',(t.timer||30)+' MIN'].forEach(p=>addPill(pills,p));if(t.date)addPill(pills,t.date);const scroll=document.createElement('div');scroll.className='thing-scroll';scroll.appendChild(top);renderThingBlocks(scroll,t);const actions=document.createElement('div');actions.className='thing-actions';actions.appendChild(button('Previous','button secondary',()=>moveThing(-1)));actions.appendChild(button('Done','button',async()=>{t.done=true;t.parked=false;t.completedAt=Date.now();render();await updateThing(t,{done:true,completedAt:t.completedAt,parked:false})}));actions.appendChild(button('Next','button secondary',()=>moveThing(1)));actions.appendChild(button('Timer','button secondary',()=>openTimer(t)));actions.appendChild(button('Edit','button secondary',()=>openEditor(t)));card.append(scroll,actions);main.appendChild(card);attachSwipe(t)}
+  function renderStack(){stackList.innerHTML='';var selected=currentIndex();visibleThings().forEach((t,i)=>{const heading=getThingTitle(t);const item=document.createElement('div');item.className='stack-item '+(i===selected?'active':'');item.dataset.id=t.firebaseId||'';item.innerHTML='<div class="stack-drag-handle" title="Drag to reorder">≡</div><div><div class="stack-name"></div><div class="small"></div></div>';item.querySelector('.stack-name').textContent=heading;item.querySelector('.small').textContent=activeCategory+' / '+(t.timer||30)+' MIN';item.onclick=function(e){if(item.dataset.dragged==='yes'){item.dataset.dragged='';return}stackCursor[activeCategory]=i;saveCursor();render()};stackList.appendChild(item)});enableStackDrag()}
   function enableStackDrag(){
     var handles=stackList.querySelectorAll('.stack-drag-handle');
     handles.forEach(function(handle){
@@ -448,14 +561,14 @@ https://figma.com/..."></textarea></label><div class="form-grid"><button class="
     try{await Promise.all(updates)}catch(error){console.error(error);alert('Could not save order. Check Firestore rules.')}
   }
 
-  function renderLibrary(){const list=$('libraryList'); if(!list)return; list.innerHTML='';things.slice().sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).forEach(t=>{const p=splitText(t.note||t.title);const item=document.createElement('div');item.className='list-item';item.innerHTML='<strong></strong><span class="small"></span>';item.querySelector('strong').textContent=(t.hidden?'🔒 ':t.done?'✓ ':'')+p.heading;item.querySelector('span').textContent=(thingStack(t)||'NO STACK')+' / '+(t.done?'DONE':t.hidden?'HIDDEN':t.parked?'PARKED':'ACTIVE')+' / tap to edit';item.onclick=()=>openEditor(t);if(t.done||t.parked||t.hidden){const restore=button('Restore Thing','button secondary',async function(event){event.stopPropagation();try{await updateThing(t,{done:false,parked:false,hidden:false,restoredAt:Date.now()});if(thingStack(t))activeCategory=thingStack(t);renderLibrary();render()}catch(error){console.error(error);alert('Could not restore this Thing. Check Firestore rules.')}});restore.style.marginTop='8px';item.appendChild(restore)}list.appendChild(item)})}
+  function renderLibrary(){const list=$('libraryList'); if(!list)return; list.innerHTML='';things.slice().sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).forEach(t=>{const heading=getThingTitle(t);const item=document.createElement('div');item.className='list-item';item.innerHTML='<strong></strong><span class="small"></span>';item.querySelector('strong').textContent=(t.hidden?'🔒 ':t.done?'✓ ':'')+p.heading;item.querySelector('span').textContent=(thingStack(t)||'NO STACK')+' / '+(t.done?'DONE':t.hidden?'HIDDEN':t.parked?'PARKED':'ACTIVE')+' / tap to edit';item.onclick=()=>openEditor(t);if(t.done||t.parked||t.hidden){const restore=button('Restore Thing','button secondary',async function(event){event.stopPropagation();try{await updateThing(t,{done:false,parked:false,hidden:false,restoredAt:Date.now()});if(thingStack(t))activeCategory=thingStack(t);renderLibrary();render()}catch(error){console.error(error);alert('Could not restore this Thing. Check Firestore rules.')}});restore.style.marginTop='8px';item.appendChild(restore)}list.appendChild(item)})}
   function renderCategoriesUI(){thingCategory.innerHTML='';allCats().forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;thingCategory.appendChild(o)}); const list=$('categoriesList'); if(!list)return; list.innerHTML='';allCats().forEach(c=>{const item=document.createElement('div');item.className='list-item';item.innerHTML='<strong>'+c+'</strong><span class="small">tap to rename stack · double tap to delete</span>';item.onclick=async()=>{const proposed=prompt('Rename stack',c);if(!proposed)return;const name=proposed.trim().toUpperCase();if(!name||name===c)return;try{let found=categories.find(x=>x.name===c);if(found){await updateDoc(doc(db,'categories',found.firebaseId),{name:name,updatedAt:Date.now()})}else{await setDoc(doc(db,'categories',name),{name:name,createdAt:Date.now()},{merge:true})}await Promise.all(things.filter(t=>thingStack(t)===c).map(t=>updateThing(t,{category:name,stack:name})));if(activeCategory===c)activeCategory=name;renderCategoriesUI();render()}catch(error){console.error(error);alert('Could not rename stack. Check your Firestore rules allow writes to categories.')}};item.ondblclick=async()=>{if(!confirm('Delete stack? Things stay but move to WORK.'))return;try{let found=categories.find(x=>x.name===c);if(found)await deleteDoc(doc(db,'categories',found.firebaseId));await Promise.all(things.filter(t=>thingStack(t)===c).map(t=>updateThing(t,{category:'WORK',stack:'WORK'})));if(activeCategory===c)activeCategory=allCats()[0]||'ADD306';renderCategoriesUI();render()}catch(error){console.error(error);alert('Could not delete stack. Check your Firestore rules allow writes to categories.')}};item.oncontextmenu=e=>{e.preventDefault();item.ondblclick()};list.appendChild(item)})}
-    function renderCalendar(){const grid=$('calendarGrid'); if(!grid)return; grid.innerHTML=''; const y=monthCursor.getFullYear(), m=monthCursor.getMonth(); $('monthTitle').textContent=monthCursor.toLocaleString('en-AU',{month:'long',year:'numeric'}); const first=new Date(y,m,1), start=new Date(first); start.setDate(1-first.getDay()); for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const iso=d.toISOString().slice(0,10);const day=document.createElement('div');day.className='day '+(d.getMonth()!==m?'out':'');day.innerHTML='<div class="day-num">'+d.getDate()+'</div>';things.filter(t=>!t.hidden&&!t.done&&t.date===iso&&thingStack(t)===activeCategory).slice(0,3).forEach(t=>{const event=document.createElement('div');event.className='cal-thing';event.textContent=splitText(t.note||t.title).heading;event.onclick=function(){const list=visibleThings();const index=list.findIndex(item=>item.firebaseId===t.firebaseId);if(index>-1){stackCursor[activeCategory]=index;saveCursor();calendarDialog.close();render()}else{openEditor(t)}};day.appendChild(event)});grid.appendChild(day)}}
+    function renderCalendar(){const grid=$('calendarGrid'); if(!grid)return; grid.innerHTML=''; const y=monthCursor.getFullYear(), m=monthCursor.getMonth(); $('monthTitle').textContent=monthCursor.toLocaleString('en-AU',{month:'long',year:'numeric'}); const first=new Date(y,m,1), start=new Date(first); start.setDate(1-first.getDay()); for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const iso=d.toISOString().slice(0,10);const day=document.createElement('div');day.className='day '+(d.getMonth()!==m?'out':'');day.innerHTML='<div class="day-num">'+d.getDate()+'</div>';things.filter(t=>!t.hidden&&!t.done&&t.date===iso&&thingStack(t)===activeCategory).slice(0,3).forEach(t=>{const event=document.createElement('div');event.className='cal-thing';event.textContent=getThingTitle(t);event.onclick=function(){const list=visibleThings();const index=list.findIndex(item=>item.firebaseId===t.firebaseId);if(index>-1){stackCursor[activeCategory]=index;saveCursor();calendarDialog.close();render()}else{openEditor(t)}};day.appendChild(event)});grid.appendChild(day)}}
   function addPill(parent,text){const pill=document.createElement('div');pill.className='pill';pill.textContent=text;parent.appendChild(pill)}
   function button(text,cls,fn){const b=document.createElement('button');b.type='button';b.className=cls;b.textContent=text;b.onclick=fn;return b}
   function greeting(){const h=new Date().getHours();return h<12?'GOOD MORNING':h<18?'GOOD AFTERNOON':'GOOD EVENING'}
-  function openEditor(t=null){ensureActiveCategory();editing=t; $('editorTitle').textContent=t?'Edit Thing':'Add Thing';renderCategoriesUI();thingText.value=t?(t.note||t.title):'';thingCategory.value=t?(t.category||activeCategory):activeCategory;thingDate.value=t?(t.date||''):'';thingImage.value=t?(t.image||''):'';thingLinks.value=t?normaliseLinksFromThing(t).join('\n'):'';$('hideThingBtn').style.display=t?'block':'none';$('deleteThingBtn').style.display=t?'block':'none';$('hideThingBtn').textContent=t&&t.hidden?'Unhide Thing':'Hide Thing';editorDialog.showModal();setTimeout(()=>thingText.focus(),150)}
-  async function saveEditor(){const value=thingText.value.trim();if(!value){thingText.focus();return}const p=splitText(value);const stackName=thingCategory.value||activeCategory;const data={title:p.heading,note:value,category:stackName,stack:stackName,date:thingDate.value,image:thingImage.value,links:parseLinks(thingLinks.value),link:parseLinks(thingLinks.value)[0]||'',timer:editing?(editing.timer||30):30,hidden:editing?!!editing.hidden:false,done:editing?!!editing.done:false,parked:editing?!!editing.parked:false,order:editing?(editing.order ?? editing.createdAt ?? Date.now()):(activeThingsInStack(stackName).length*1000),createdAt:editing?(editing.createdAt||Date.now()):Date.now()};try{if(editing){await updateThing(editing,data)}else{await addDoc(collection(db,'tasks'),data)}editorDialog.close()}catch(error){console.error(error);alert('Could not save. Check your Firestore rules allow writes to tasks.')}}
+  function openEditor(t=null){ensureActiveCategory();editing=t; $('editorTitle').textContent=t?'Edit Thing':'Add Thing';renderCategoriesUI();thingText.value=t?getThingTitle(t):'';thingCategory.value=t?(thingStack(t)||activeCategory):activeCategory;thingDate.value=t?(t.date||''):'';editorBlocks=t?getThingBlocks(t).map(function(block){return {...block}}):[{type:'text',text:''}];renderBlockEditor();$('hideThingBtn').style.display=t?'block':'none';$('deleteThingBtn').style.display=t?'block':'none';$('hideThingBtn').textContent=t&&t.hidden?'Unhide Thing':'Hide Thing';editorDialog.showModal();setTimeout(()=>thingText.focus(),150)}
+  async function saveEditor(){const value=thingText.value.trim();if(!value){thingText.focus();return}const stackName=thingCategory.value||activeCategory;const blocks=cleanEditorBlocks();const firstImage=blocks.find(function(b){return b.type==='image'});const resources=blocks.filter(function(b){return b.type==='resource'}).map(function(b){return b.url});const firstText=blocks.find(function(b){return b.type==='text'});const data={title:value,note:value+(firstText?'\n'+firstText.text:''),blocks:blocks,category:stackName,stack:stackName,date:thingDate.value,image:firstImage?firstImage.src:'',links:resources,link:resources[0]||'',timer:editing?(editing.timer||30):30,hidden:editing?!!editing.hidden:false,done:editing?!!editing.done:false,parked:editing?!!editing.parked:false,order:editing?(editing.order ?? editing.createdAt ?? Date.now()):(activeThingsInStack(stackName).length*1000),createdAt:editing?(editing.createdAt||Date.now()):Date.now()};try{if(editing){await updateThing(editing,data)}else{await addDoc(collection(db,'tasks'),data)}editorDialog.close()}catch(error){console.error(error);alert('Could not save. Check your Firestore rules allow writes to tasks.')}}
   function attachSwipe(t){let x=0,y=0;const card=$('focusCard');if(!card)return;card.addEventListener('touchstart',e=>{x=e.touches[0].clientX;y=e.touches[0].clientY},{passive:true});card.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-x,dy=e.changedTouches[0].clientY-y;if(Math.abs(dx)>80&&Math.abs(dx)>Math.abs(dy)*1.4){moveThing(dx<0?1:-1)}},{passive:true})}
   function makeTicks(){timerTicks.innerHTML='';for(let i=0;i<48;i++){const tick=document.createElement('div');tick.className=i%12===0?'tick major':'tick';tick.style.height=i%6===0?'24px':'14px';tick.style.transform='translate(-50%,-50%) rotate('+(i*7.5)+'deg) translateY(-154px)';timerTicks.appendChild(tick)}}
   function setTimerMinutes(mins){let v=Math.round(Number(mins)/5)*5;if(v<0)v=0;if(v>120)v=120;if(v!==selectedMinutes)playTick();selectedMinutes=v;timerValue.textContent=v;timerEndText.textContent='Ends in '+v+' min';timerTicks.style.transform='rotate('+(v*3)+'deg)'}
@@ -470,7 +583,7 @@ https://figma.com/..."></textarea></label><div class="form-grid"><button class="
   passwordBtn.onclick=checkPassword;
   passwordInput.addEventListener('keydown',function(event){if(event.key==='Enter'){event.preventDefault();checkPassword()}});
   if(sessionStorage.getItem('omtUnlocked')==='yes'){unlockApp()}else{setTimeout(()=>passwordInput.focus(),250)}
-  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());const hideRailBtn=$('hideRailBtn');const showRailBtn=$('showRailBtn');if(window.matchMedia('(max-width:820px)').matches){appShell.classList.add('rail-hidden')}if(hideRailBtn)hideRailBtn.onclick=function(){appShell.classList.add('rail-hidden')};if(showRailBtn)showRailBtn.onclick=function(){appShell.classList.remove('rail-hidden')};$('addBtn').onclick=()=>openEditor();$('libraryBtn').onclick=()=>{renderLibrary();libraryDialog.showModal()};$('calendarBtn').onclick=()=>{renderCalendar();calendarDialog.showModal()};$('categoriesBtn').onclick=()=>categoriesDialog.showModal();$('saveThingBtn').onclick=saveEditor;document.getElementById('editorForm').addEventListener('submit',e=>{e.preventDefault();saveEditor()});thingText.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();saveEditor()}});$('hideThingBtn').onclick=async()=>{if(editing){await updateThing(editing,{hidden:!editing.hidden});editorDialog.close()}};$('deleteThingBtn').onclick=async()=>{if(editing&&confirm('Delete this thing?')){await deleteThing(editing);editorDialog.close()}};$('addCategoryBtn').onclick=async()=>{const name=$('newCategoryInput').value.trim().toUpperCase();if(!name)return;try{await setDoc(doc(db,'categories',name),{name,createdAt:Date.now()},{merge:true});activeCategory=name;$('newCategoryInput').value=''}catch(error){console.error(error);alert('Could not add stack. Check your Firestore rules allow writes to categories.')}};$('prevMonthBtn').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()-1);renderCalendar()};$('nextMonthBtn').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()+1);renderCalendar()};const deleteArchivedBtn=$('deleteArchivedBtn');if(deleteArchivedBtn)deleteArchivedBtn.onclick=async()=>{const archived=things.filter(t=>t.done);if(!archived.length){alert('No done / archived Things to delete.');return}if(!confirm('Delete '+archived.length+' done / archived Things?'))return;try{await Promise.all(archived.map(t=>deleteThing(t)));renderLibrary()}catch(error){console.error(error);alert('Could not delete archived Things. Check Firestore rules.')}};$('closeTimerBtn').onclick=()=>timerDialog.close();$('startTimerBtn').onclick=()=>{if(selectedThing){updateThing(selectedThing,{timer:selectedMinutes});startTimer(selectedThing.title,selectedMinutes)}};document.addEventListener('keydown',e=>{if(e.key==='Enter'&&editorDialog.open&&!e.shiftKey){e.preventDefault();saveEditor()} if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!editorDialog.open&&!timerDialog.open&&!calendarDialog.open&&!libraryDialog.open){if(currentThing()){e.preventDefault();moveThing(e.key==='ArrowRight'?1:-1)}}});
+  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());const hideRailBtn=$('hideRailBtn');const showRailBtn=$('showRailBtn');if(window.matchMedia('(max-width:820px)').matches){appShell.classList.add('rail-hidden')}if(hideRailBtn)hideRailBtn.onclick=function(){appShell.classList.add('rail-hidden')};if(showRailBtn)showRailBtn.onclick=function(){appShell.classList.remove('rail-hidden')};$('addBtn').onclick=()=>openEditor();$('libraryBtn').onclick=()=>{renderLibrary();libraryDialog.showModal()};$('calendarBtn').onclick=()=>{renderCalendar();calendarDialog.showModal()};$('categoriesBtn').onclick=()=>categoriesDialog.showModal();$('saveThingBtn').onclick=saveEditor;$('addTextBlockBtn').onclick=function(){addEditorBlock('text')};$('addImageBlockBtn').onclick=function(){addEditorBlock('image')};$('addResourceBlockBtn').onclick=function(){addEditorBlock('resource')};document.getElementById('editorForm').addEventListener('submit',e=>{e.preventDefault();saveEditor()});thingText.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();saveEditor()}});$('hideThingBtn').onclick=async()=>{if(editing){await updateThing(editing,{hidden:!editing.hidden});editorDialog.close()}};$('deleteThingBtn').onclick=async()=>{if(editing&&confirm('Delete this thing?')){await deleteThing(editing);editorDialog.close()}};$('addCategoryBtn').onclick=async()=>{const name=$('newCategoryInput').value.trim().toUpperCase();if(!name)return;try{await setDoc(doc(db,'categories',name),{name,createdAt:Date.now()},{merge:true});activeCategory=name;$('newCategoryInput').value=''}catch(error){console.error(error);alert('Could not add stack. Check your Firestore rules allow writes to categories.')}};$('prevMonthBtn').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()-1);renderCalendar()};$('nextMonthBtn').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()+1);renderCalendar()};const deleteArchivedBtn=$('deleteArchivedBtn');if(deleteArchivedBtn)deleteArchivedBtn.onclick=async()=>{const archived=things.filter(t=>t.done);if(!archived.length){alert('No done / archived Things to delete.');return}if(!confirm('Delete '+archived.length+' done / archived Things?'))return;try{await Promise.all(archived.map(t=>deleteThing(t)));renderLibrary()}catch(error){console.error(error);alert('Could not delete archived Things. Check Firestore rules.')}};$('closeTimerBtn').onclick=()=>timerDialog.close();$('startTimerBtn').onclick=()=>{if(selectedThing){updateThing(selectedThing,{timer:selectedMinutes});startTimer(selectedThing.title,selectedMinutes)}};document.addEventListener('keydown',e=>{if(e.key==='Enter'&&editorDialog.open&&!e.shiftKey){e.preventDefault();saveEditor()} if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!editorDialog.open&&!timerDialog.open&&!calendarDialog.open&&!libraryDialog.open){if(currentThing()){e.preventDefault();moveThing(e.key==='ArrowRight'?1:-1)}}});
   makeTicks();enableDial();
 </script>
 </body>
